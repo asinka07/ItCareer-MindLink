@@ -2,50 +2,68 @@
 @inject UserSessionService Session
 @inject NavigationManager Nav
 @inject MindLink.Data.MindLinkDbContext DbContext
-@using Microsoft.AspNetCore.Identity
 @using MindLink.Data.Models
+@using Microsoft.AspNetCore.Identity
 @using MindLink.Data.Services
-<link href="css/mindlink-entry.css" rel="stylesheet" />
+
+<link href="css/mindlink-register.css" rel="stylesheet" />
 
 <PageTitle>Вход в ML</PageTitle>
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Вход в ML</title>
-</head>
-<body>
-    <div class="auth-container">
-        <div class="auth-card">
+<div class="registration-page">
+    <div class="registration-form">
+
+        <div class="header">
             <div class="logo">ML</div>
             <h2>Вход в MindLink</h2>
-            <p class="muted">Добре дошъл обратно 🌿</p>
+            <p class="muted">Добре дошъл обратно </p>
+        </div>
 
-            <form class="auth-form">
-                <label class="inf">Потребителско име</label>
-                <input type="email" placeholder="user_example" @bind-value="Username" @bind-value:event="oninput" required />
+        <div class="auth-container">
 
-                <label class="inf">Парола</label>
-                <input type="password" placeholder="••••••••••" @bind-value="@password" required />
+            <div class="field">
+                <label>Потребителско име</label>
+                <input type="text" @bind="Username" placeholder="user_example" />
+            </div>
 
-                <button type="button" class="btn primary" disabled="@IsButtonDisabled" @onclick="@Log">Вход</button>
-            </form>
+            <div class="field">
+                <label>Парола</label>
+                <div class="password-wrapper">
+                    <input type="@PasswordInputType" @bind="Password" placeholder="••••••••••" />
+                    <button type="button" class="eye-btn" @onclick="TogglePasswordVisibility">
+                        @(IsPasswordVisible ? "🙈" : "👁️")
+                    </button>
+                </div>
+            </div>
+
+
+
+            @if (submitAttempted && !ValidUser())
+            {
+                <div class="text-danger" style="text-align: center">
+                    Невалидно потребителско име или парола.
+                </div>
+            }
+
+            <button class="btn primary" @onclick="Log">
+                Вход
+            </button>
 
             <p class="muted small">
-                Нямаш акаунт?
-                <a href="/signup">Регистрирай се</a>
+                Нямаш акаунт? <a href="/signup">Регистрирай се</a>
             </p>
+
         </div>
     </div>
-</body>
+</div>
+
 @code {
     UsersService _usersService = null!;
     List<User> allUsers = new List<User>();
     User user = new User();
 
-    string password = string.Empty;
     private string username = string.Empty;
-    string Username
+    private string Username
     {
         get => username;
         set
@@ -55,7 +73,13 @@
         }
     }
 
-    bool IsButtonDisabled => user == null || string.IsNullOrWhiteSpace(password);
+    private string Password { get; set; } = string.Empty;
+
+    private bool IsPasswordVisible = false;
+    private string PasswordInputType => IsPasswordVisible ? "text" : "password";
+    private void TogglePasswordVisibility() => IsPasswordVisible = !IsPasswordVisible;
+
+    bool IsButtonDisabled => user == null || string.IsNullOrWhiteSpace(Password);
 
     protected override async void OnInitialized()
     {
@@ -68,8 +92,19 @@
         user = allUsers.FirstOrDefault(x => x.Username == username);
     }
 
+    private bool submitAttempted = false;
+
     private void Log()
     {
+        submitAttempted = true;
+
+        if (string.IsNullOrWhiteSpace(Username))
+        {
+            return;
+        }
+
+        FindUser();
+
         if (ValidUser())
         {
             Session.LogIn(user);
@@ -81,14 +116,11 @@
 
     private bool ValidUser()
     {
+        if (user == null || string.IsNullOrWhiteSpace(Password))
+            return false;
+
         PasswordHasher<object> hasher = new PasswordHasher<object>();
-
-        PasswordVerificationResult result = hasher.VerifyHashedPassword(user, user.Password, password);
-
-        if (result == PasswordVerificationResult.Success)
-        {
-            return true;
-        }
-        return false;
+        var result = hasher.VerifyHashedPassword(user, user.Password, Password);
+        return result == PasswordVerificationResult.Success;
     }
 }
