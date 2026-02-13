@@ -76,9 +76,15 @@
 			</div>
 
 			<div class="row-passwords">
+				<!-- Парола -->
 				<div class="field">
 					<label>Парола</label>
-					<input type="password" @bind="user.Password" placeholder="••••••••••" />
+					<div class="password-wrapper">
+						<input type="@PasswordInputType" @bind="user.Password" placeholder="••••••••••" />
+						<button type="button" class="eye-btn" @onclick="TogglePasswordVisibility">
+							@(IsPasswordVisible ? "🙈" : "👁️")
+						</button>
+					</div>
 					@if (submitAttempted && !VerifyPassword())
 					{
 						<div class="text-danger">
@@ -86,15 +92,23 @@
 						</div>
 					}
 				</div>
+
+				<!-- Потвърди парола -->
 				<div class="field">
 					<label>Потвърди парола</label>
-					<input type="password" @bind="ConfirmPassword" placeholder="••••••••••" />
+					<div class="password-wrapper">
+						<input type="@ConfirmPasswordInputType" @bind="ConfirmPassword" placeholder="••••••••••" />
+						<button type="button" class="eye-btn" @onclick="ToggleConfirmPasswordVisibility">
+							@(IsConfirmPasswordVisible ? "🙈" : "👁️")
+						</button>
+					</div>
 					@if (submitAttempted && !VerifyConfirmPassword())
 					{
 						<div class="text-danger">Паролите не съвпадат</div>
 					}
 				</div>
 			</div>
+
 
 			<button class="btn primary" @onclick="CreateUser">
 				Регистрация
@@ -150,6 +164,22 @@
 		ConfirmPassword = "";
 
 		Nav.NavigateTo("/success");
+	}
+
+	private bool IsPasswordVisible = false;
+	private bool IsConfirmPasswordVisible = false;
+
+	private string PasswordInputType => IsPasswordVisible ? "text" : "password";
+	private string ConfirmPasswordInputType => IsConfirmPasswordVisible ? "text" : "password";
+
+	private void TogglePasswordVisibility()
+	{
+		IsPasswordVisible = !IsPasswordVisible;
+	}
+
+	private void ToggleConfirmPasswordVisibility()
+	{
+		IsConfirmPasswordVisible = !IsConfirmPasswordVisible;
 	}
 
 	private static string GenerateCode()
