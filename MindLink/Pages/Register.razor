@@ -23,45 +23,80 @@
 			<div class="row-short">
 				<div class="field">
 					<label>Име</label>
-					<input type="text" @bind="FirstName" placeholder="напр. Иван" />
+					<input type="text" @bind="FirstName" @bind:event="oninput" placeholder="напр. Иван" />
+					@if (submitAttempted && !VerifyFirstName())
+					{
+						<div class="text-danger">Моля, въведете име (минимум 2 символа)</div>
+					}
 				</div>
 				<div class="field">
 					<label>Фамилия</label>
-					<input type="text" @bind="LastName" placeholder="напр. Петров" />
+					<input type="text" @bind="LastName" @bind:event="oninput" placeholder="напр. Петров" />
+					@if (submitAttempted && !VerifyLastName())
+					{
+						<div class="text-danger">Моля, въведете фамилия (минимум 2 символа)</div>
+					}
 				</div>
 			</div>
 
 			<div class="row-short">
 				<div class="field">
 					<label>Дата на раждане</label>
-					<input type="date" @bind="user.Birthday" />
+					<input type="date" @bind="user.Birthday" @bind:event="oninput" />
+					@if (submitAttempted && !VerifyBirthday())
+					{
+						<div class="text-danger">Моля, въведете валидна дата</div>
+					}
 				</div>
 				<div class="field">
 					<label>Пол</label>
 					<div class="gender-options">
-						<label><input type="radio" name="gender" @onclick="() => SelectGender('m')" /> Мъж</label>
-						<label><input type="radio" name="gender" @onclick="() => SelectGender('f')" /> Жена</label>
+						<label>
+							<input type="radio" name="gender" checked="@IsMale()" @onclick="() => SelectGender('m')" /> Мъж
+						</label>
+						<label>
+							<input type="radio" name="gender" checked="@IsFemale()" @onclick="() => SelectGender('f')" /> Жена
+						</label>
 					</div>
+
+					@if (submitAttempted && !VerifyGender())
+					{
+						<div class="text-danger">Моля, изберете пол</div>
+					}
 				</div>
 			</div>
 
 			<div class="field">
 				<label>Потребителско име</label>
-				<input type="text" @bind="user.Username" placeholder="user_example" />
+				<input type="text" @bind="user.Username" @bind:event="oninput" placeholder="user_example" />
+				@if (submitAttempted && !VerifyUsername())
+				{
+					<div class="text-danger">Потребителското име е задължително и трябва да е уникално</div>
+				}
 			</div>
 
 			<div class="row-passwords">
 				<div class="field">
 					<label>Парола</label>
 					<input type="password" @bind="user.Password" placeholder="••••••••••" />
+					@if (submitAttempted && !VerifyPassword())
+					{
+						<div class="text-danger">
+							Паролата трябва да е поне 12 символа и да съдържа главна, малка буква, цифра и символ
+						</div>
+					}
 				</div>
 				<div class="field">
 					<label>Потвърди парола</label>
-					<input type="password" placeholder="••••••••••" />
+					<input type="password" @bind="ConfirmPassword" placeholder="••••••••••" />
+					@if (submitAttempted && !VerifyConfirmPassword())
+					{
+						<div class="text-danger">Паролите не съвпадат</div>
+					}
 				</div>
 			</div>
 
-			<button class="btn primary large" @onclick="CreateUser">
+			<button class="btn primary" @onclick="CreateUser">
 				Регистрация
 			</button>
 
@@ -81,105 +116,40 @@
 
 	private string FirstName;
 	private string LastName;
-	private bool isDropdownOpen = false;
-	private string selectedRoleLabel = "- -  Изберете роля  - -";
-
-
-	private void ToggleDropdown()
-	{
-		isDropdownOpen = !isDropdownOpen;
-	}
-
-	private void CloseDropdown()
-	{
-		isDropdownOpen = false;
-	}
-
-	private void SelectRole(int roleId)
-	{
-		user.RoleId = roleId;
-		selectedRoleLabel = roleId switch
-		{
-			1 => "Ученик",
-			2 => "Учител",
-			3 => "Друго",
-			_ => "- -  Изберете роля  - -"
-		};
-		isDropdownOpen = false;
-	}
-
+	private string ConfirmPassword;
 	UsersService _usersService = null!;
 	User user = new User();
 	private List<User> allUsers = new List<User>();
 	bool isValidPassword = false;
 
-	protected override async void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		_usersService = new UsersService(DbContext);
-		user = new User();
-		user.Password = "";
 		allUsers = await _usersService.GetAllUsers();
+		user = new User();
+		ConfirmPassword = "";
 	}
 
-	private bool VerifyUser()
-	{
-		return !(VerifyUsername() && VerifyFirstName() && VerifyRole() && VerifyPassword());
-	}
-
-	private bool VerifyUsername()
-	{
-		return !string.IsNullOrEmpty(user.Username) && user.Username.Length > 5 && !allUsers.Any(x => x.Username == user.Username);
-	}
-
-	private bool VerifyPassword()
-	{
-		return !string.IsNullOrEmpty(user.Password) && user.Password.Length >= 12 && user.Password.Any(char.IsDigit) &&
-					user.Password.Any(char.IsLower) && user.Password.Any(char.IsUpper) && user.Password.Any(x => !char.IsLetterOrDigit(x));
-	}
-
-	private void PasswordInput(ChangeEventArgs e)
-	{
-		user.Password = e.Value?.ToString();
-	}
-
-	private bool VerifyFirstName()
-	{
-		return (!string.IsNullOrEmpty(FirstName) && FirstName.Length > 2);
-	}
-
-	private bool VerifyLastName()
-	{
-		return (!string.IsNullOrEmpty(LastName) && LastName.Length > 2);
-	}
-
-	private bool VerifyRole()
-	{
-		return user.RoleId > 0;
-	}
-
-	private void SelectGender(char gender)
-	{
-		user.Gender = gender;
-	}
-
-	private void CreateUser()
+	private async Task CreateUser()
 	{
 		submitAttempted = true;
-		StateHasChanged();
-		if (VerifyUser())
+
+		if (!VerifyUser())
 		{
-			StateHasChanged();
 			return;
 		}
-		else
-		{
-			user.Name = FirstName.TrimEnd() + " " + LastName.TrimEnd();
-			user.UserCode = GenerateUniqueUserCode();
-			_usersService.CreateUser(user);
-			user = new User();
-			Nav.NavigateTo("/success");
-		}
 
+		user.Name = FirstName.Trim() + " " + LastName.Trim();
+		user.UserCode = GenerateUniqueUserCode();
+
+		await _usersService.CreateUser(user);
+
+		user = new User();
+		FirstName = "";
+		LastName = "";
+		ConfirmPassword = "";
+
+		Nav.NavigateTo("/success");
 	}
 
 	private static string GenerateCode()
@@ -206,6 +176,37 @@
 	{
 		return _usersService.IsCodeExisting(code);
 	}
+
+	private void SelectGender(char gender)
+	{
+		user.Gender = gender;
+	}
+
+	private bool IsMale() => user.Gender == 'm';
+	private bool IsFemale() => user.Gender == 'f';
+
+	private bool VerifyUser() =>
+		VerifyFirstName() && VerifyLastName() && VerifyBirthday() &&
+		VerifyGender() && VerifyUsername() && VerifyPassword() && VerifyConfirmPassword();
+
+	private bool VerifyFirstName() => !string.IsNullOrWhiteSpace(FirstName) && FirstName.Length >= 2;
+	private bool VerifyLastName() => !string.IsNullOrWhiteSpace(LastName) && LastName.Length >= 2;
+	private bool VerifyBirthday() =>
+		user.Birthday != default && (DateTime.Today.Year - user.Birthday.Year) >= 10 && (DateTime.Today.Year - user.Birthday.Year) <= 120; 
+	private bool VerifyGender() => user.Gender == 'm' || user.Gender == 'f';
+	private bool VerifyUsername() => !string.IsNullOrWhiteSpace(user.Username) && !allUsers.Any(u => u.Username == user.Username);
+	private bool VerifyPassword()
+	{
+		var pw = user.Password?.Trim() ?? "";
+		return pw.Length >= 12 &&
+			   pw.Any(char.IsUpper) &&
+			   pw.Any(char.IsLower) &&
+			   pw.Any(char.IsDigit) &&
+			   pw.Any(c => !char.IsLetterOrDigit(c));
+	}
+
+	private bool VerifyConfirmPassword() =>
+		user.Password != null && user.Password == (ConfirmPassword?.Trim() ?? "");
 }
 
 <script>
