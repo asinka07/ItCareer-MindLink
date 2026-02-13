@@ -1,6 +1,7 @@
 @inject NavigationManager NavManager
-<link href="css/NavMenu.css" rel="stylesheet" />
 <link href="css/site.css" rel="stylesheet" />
+<link href="css/custom-navbar.csss" rel="stylesheet" />
+
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -20,7 +21,17 @@
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/archive">
-                <span class="oi oi-graph" aria-hidden="true"></span> Архив
+                <span class="oi oi-book" aria-hidden="true"></span> Архив
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/admin-panel">
+                <span class="oi oi-people" aria-hidden="true"></span> Потребители
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/user-logs">
+                <span class="oi oi-spreadsheet" aria-hidden="true"></span> История на влизанията
             </NavLink>
         </div>
 @*         <div class="nav-item px-3">
@@ -37,7 +48,7 @@
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+    private bool collapseNavMenu = false;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
