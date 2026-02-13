@@ -9,7 +9,13 @@
     <div class="users-section">
         <div class="users-header">
             <input type="text" placeholder="Search user..." class="search-input" />
-            <button class="btn primary" @onclick="OpenAddUser">Add User</button>
+            <button class="btn primary" @onclick="OpenAddUser">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" style="margin-right: 5px; margin-bottom: 3px;" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                </svg>
+                 Add User
+            </button>
         </div>
 
         <table class="users-table">
@@ -24,33 +30,32 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Иван</td>
-                    <td>Иванов</td>
-                    <td>ivan123</td>
-                    <td>User</td>
-                    <td>01.01.2024</td>
-                    <td>
-                        <button class="btn edit-btn" @onclick="OpenEdit">✏️</button>
-                        <button class="btn delete-btn">🗑️</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Мария</td>
-                    <td>Георгиева</td>
-                    <td>maria_g</td>
-                    <td>SuperAdmin</td>
-                    <td>05.03.2024</td>
-                    <td>
-                        <button class="btn edit-btn" @onclick="OpenEdit">✏️</button>
-                        <button class="btn delete-btn">🗑️</button>
-                    </td>
-                </tr>
+                @foreach (var user in users)
+                {
+                    <tr>
+                        <td>Иван</td>
+                        <td>Иванов</td>
+                        <td>ivan123</td>
+                        <td>User</td>
+                        <td>01.01.2024</td>
+                        <td>
+                            <button class="btn edit-btn" @onclick="() => OpenEdit(user)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" />
+                                </svg>
+                            </button>
+                            <button class="btn delete-btn" @onclick="() => OpenDelete(user)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
 
-    <!-- Редакционен/Добавяне модал -->
     @if (isEditOpen)
     {
         <div class="modal-overlay">
@@ -83,23 +88,80 @@
             </div>
         </div>
     }
+
+    @if (isDeleteOpen)
+    {
+        <div class="modal-overlay">
+            <div class="delete-panel">
+                <h3>Изтриване на потребител</h3>
+                <p>Сигурни ли сте, че искате да изтриете потребител <strong>@currentUser.FirstName @currentUser.LastName</strong>?</p>
+                <div class="edit-actions">
+                    <button class="btn delete-btn" @onclick="ConfirmDelete">Изтрий</button>
+                    <button class="btn cancelBtn" @onclick="CloseDelete">Откажи</button>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
     bool isEditOpen = false;
     bool isAdding = false;
+    bool isDeleteOpen = false;
 
-    void OpenEdit()
+    User currentUser = new User();
+    List<User> users = new List<User>
     {
+        new User { FirstName = "Иван", LastName = "Иванов", Username = "ivan123", Role = "User", CreatedAt = new DateTime(2024,1,1) },
+        new User { FirstName = "Мария", LastName = "Георгиева", Username = "maria_g", Role = "SuperAdmin", CreatedAt = new DateTime(2024,3,5) }
+    };
+
+    void OpenEdit(User user)
+    {
+        currentUser = user;
         isAdding = false;
         isEditOpen = true;
     }
 
     void OpenAddUser()
     {
+        currentUser = new User();
         isAdding = true;
         isEditOpen = true;
     }
 
     void CloseEdit() => isEditOpen = false;
+
+    void SaveUser()
+    {
+        if (isAdding)
+        {
+            currentUser.CreatedAt = DateTime.Now;
+            users.Add(currentUser);
+        }
+        isEditOpen = false;
+    }
+
+    void OpenDelete(User user)
+    {
+        currentUser = user;
+        isDeleteOpen = true;
+    }
+
+    void CloseDelete() => isDeleteOpen = false;
+
+    void ConfirmDelete()
+    {
+        users.Remove(currentUser);
+        isDeleteOpen = false;
+    }
+
+    public class User
+    {
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string Username { get; set; } = "";
+        public string Role { get; set; } = "User";
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
 }
