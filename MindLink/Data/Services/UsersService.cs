@@ -15,7 +15,7 @@ public class UsersService
 
     public async Task<List<User>> GetAllUsers()
     {
-        return await _context.Users.Include(u => u.Role).Include(u => u.Teacher).ToListAsync();
+        return await _context.Users.Include(u => u.Role).ToListAsync();
     }
 
     public async Task CreateUser(User user)

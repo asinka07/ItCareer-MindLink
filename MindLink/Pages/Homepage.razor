@@ -116,8 +116,7 @@
 	private void Save()
 	{
 		record.UserCode = Session?.CurrentUser?.UserCode!;
-		record.RecordRate = 1; //to be changed
-		record.ResourceText = ""; //to be changed
+		record.Rate = 1; //to be changed
 		_recordsService.CreateRecord(record);
 		record = new Record();
 	}
