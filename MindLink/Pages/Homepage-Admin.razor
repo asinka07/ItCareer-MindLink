@@ -1,0 +1,105 @@
+﻿@page "/admin-panel"
+
+<link href="css/Homepage.css" rel="stylesheet" />
+<link href="css/Homepage - admin.css" rel="stylesheet" />
+
+<PageTitle>MindLink - Администратор</PageTitle>
+
+<div class="admin-page">
+    <div class="users-section">
+        <div class="users-header">
+            <input type="text" placeholder="Search user..." class="search-input" />
+            <button class="btn primary" @onclick="OpenAddUser">Add User</button>
+        </div>
+
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>Име</th>
+                    <th>Фамилия</th>
+                    <th>Username</th>
+                    <th>Роля</th>
+                    <th>Създаден</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Иван</td>
+                    <td>Иванов</td>
+                    <td>ivan123</td>
+                    <td>User</td>
+                    <td>01.01.2024</td>
+                    <td>
+                        <button class="btn edit-btn" @onclick="OpenEdit">✏️</button>
+                        <button class="btn delete-btn">🗑️</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Мария</td>
+                    <td>Георгиева</td>
+                    <td>maria_g</td>
+                    <td>SuperAdmin</td>
+                    <td>05.03.2024</td>
+                    <td>
+                        <button class="btn edit-btn" @onclick="OpenEdit">✏️</button>
+                        <button class="btn delete-btn">🗑️</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Редакционен/Добавяне модал -->
+    @if (isEditOpen)
+    {
+        <div class="modal-overlay">
+            <div class="edit-panel">
+                <h3>@(isAdding ? "Добавяне на потребител" : "Редактиране на потребител")</h3>
+                <div class="field">
+                    <label>Име</label>
+                    <input type="text" placeholder="Име" />
+                </div>
+                <div class="field">
+                    <label>Фамилия</label>
+                    <input type="text" placeholder="Фамилия" />
+                </div>
+                <div class="field">
+                    <label>Username</label>
+                    <input type="text" placeholder="Username" />
+                </div>
+                <div class="field">
+                    <label>Роля</label>
+                    <select>
+                        <option>User</option>
+                        <option>SuperAdmin</option>
+                    </select>
+                </div>
+
+                <div class="edit-actions">
+                    <button class="btn primary" @onclick="CloseEdit">@(isAdding ? "Добави" : "Запази")</button>
+                    <button class="btn cancelBtn" @onclick="CloseEdit">Откажи</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    bool isEditOpen = false;
+    bool isAdding = false;
+
+    void OpenEdit()
+    {
+        isAdding = false;
+        isEditOpen = true;
+    }
+
+    void OpenAddUser()
+    {
+        isAdding = true;
+        isEditOpen = true;
+    }
+
+    void CloseEdit() => isEditOpen = false;
+}
