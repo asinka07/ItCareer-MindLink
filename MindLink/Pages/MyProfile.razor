@@ -1,0 +1,185 @@
+@page "/myprofile"
+@inject NavigationManager Nav
+@inject UserSessionService Session
+@inject MindLink.Data.MindLinkDbContext DbContext
+@using Microsoft.AspNetCore.Identity
+@using MindLink.Data.Models
+@using MindLink.Data.Services
+<link href="css/site.css" rel="stylesheet" />
+<link href="css/MyProfile.css" rel="stylesheet" />
+
+<PageTitle>MindLink - Начало</PageTitle>
+
+<div class="profile-page">
+	<div class="profile-card">
+
+		<div class="profile-left">
+			<div class="avatar">
+				<span>@avatar</span>
+			</div>
+			<h2>@user.Name</h2>
+			<p class="username">@user.Username</p>
+		</div>
+
+		<div class="profile-right">
+			<h3>Лична информация</h3>
+
+			<div class="info-grid">
+				<div class="info-box">
+					<label>Име</label>
+					<input class="profile-input" type="text" @bind-value="@name" disabled="@(!isEditing)" />
+				</div>
+
+				<div class="info-box">
+					<label>Потребител</label>
+					<input class="profile-input" type="text" @bind-value="@username" disabled="@(!isEditing)" />
+				</div>
+
+				<div class="info-box">
+					<label>Дата на раждане</label>
+					<input class="profile-input" type="date" @bind-value="@birthday" disabled="@(!isEditing)" />
+				</div>
+
+				<div class="info-box">
+					<label>Пол</label>
+					<select class="profile-input" @bind="@gender" disabled="@(!isEditing)">
+						<option value="m">Мъж</option>
+						<option value="f">Жена</option>
+					</select>
+				</div>
+			</div>
+			<div>
+				<button class="btn btnFontSize passwordBtn" @onclick="() => showChangePasswordModal = true">
+					Смени парола
+				</button>
+			</div>
+			<div class="profile-actions">
+				@if (!isEditing)
+				{
+					<button class="btn btnFontSize editBtn" @onclick="EnableEdit">Редактирай</button>
+				}
+				else
+				{
+					<button class="btn btnFontSize cancelBtn" @onclick="Cancel">Отказ</button>
+					<button class="btn btnFontSize saveBtn" @onclick="Save">Запази</button>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+@if (showChangePasswordModal)
+{
+	<div class="modal-backdrop">
+		<div class="modal">
+			<h3>Смяна на парола</h3>
+
+			<input class="info-box" placeholder="Стара парола" @bind="oldPassword" />
+			<input class="info-box" placeholder="Нова парола" @bind="newPassword" />
+			<input class="info-box" placeholder="Потвърди нова парола" @bind="confirmPassword" />
+
+			<div class="modal-actions">
+				<button class="btn btnFontSize cancelBtn" @onclick="CloseChangePasswordModal">Отказ</button>
+				<button class="btn btnFontSize saveBtn" @onclick="SavePassword">Запази</button>
+			</div>
+		</div>
+	</div>
+}
+
+@code {
+	UsersService _usersService = null!;
+	User user = new User();
+
+	string avatar = string.Empty;
+	string oldPassword = string.Empty;
+	string newPassword = string.Empty;
+	string confirmPassword = string.Empty;
+	string name = string.Empty;
+	string username = string.Empty;
+	DateTime? birthday;
+
+	char gender;
+
+	bool isEditing = false;
+	bool showChangePasswordModal = false;
+
+
+	protected override void OnInitialized()
+	{
+		if (!Session.IsLoggedIn)
+		{
+			Nav.NavigateTo("/login");
+		}
+		_usersService = new UsersService(DbContext);
+		user = Session.CurrentUser;
+		string[] nameStrings = user.Name.Split();
+		avatar = nameStrings[0].Substring(0,1) + nameStrings[1].Substring(0, 1);
+		name = user.Name;
+		username = user.Username;
+		birthday = user.Birthday;
+		gender = user.Gender;
+	}
+
+	private void OpenChangePasswordModal() 
+	{
+		showChangePasswordModal = true;
+	}
+	private void CloseChangePasswordModal()
+	{
+		oldPassword = string.Empty;
+		newPassword = string.Empty;
+		confirmPassword = string.Empty;
+		showChangePasswordModal = false;
+	}
+
+	private void SavePassword()
+	{
+		PasswordHasher<object> hasher = new PasswordHasher<object>();
+		PasswordVerificationResult result = hasher.VerifyHashedPassword(user, user.Password, oldPassword);
+		if (result == PasswordVerificationResult.Success)
+		{
+			if (newPassword != confirmPassword || !VerifyPassword())
+			{
+				return;
+			}
+			user.Password = newPassword;
+		    _usersService.UpdatePassword(user);
+		}
+		else
+		{
+			return;
+		}
+		CloseChangePasswordModal();
+	}
+
+	private bool VerifyPassword()
+	{
+		return !string.IsNullOrEmpty(user.Password) && user.Password.Length >= 12 && user.Password.Any(char.IsDigit) &&
+					user.Password.Any(char.IsLower) && user.Password.Any(char.IsUpper) && user.Password.Any(x => !char.IsLetterOrDigit(x));
+	}
+
+	private void ChangePassword()
+	{
+		isEditing = true;
+	}
+
+	private void EnableEdit()
+	{
+		isEditing = true;
+	}
+
+	private void Save()
+	{
+		_usersService.UpdateUser(user);
+		isEditing = false;
+	}
+
+	private void Cancel()
+	{
+		name = user.Name;
+		username = user.Username;
+		birthday = user.Birthday;
+		gender = user.Gender;
+		isEditing = false;
+	}
+}

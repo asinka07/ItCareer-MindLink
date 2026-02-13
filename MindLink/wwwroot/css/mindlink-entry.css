@@ -1,0 +1,108 @@
+﻿:root {
+    --bg1: #BDFFFE;
+    --bg2: #9DF2A3;
+    --accent: #5C6BC0;
+    --muted: #6b7280;
+    --card: #ffffff;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg1), var(--bg2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 24px;
+}
+
+.auth-card {
+    background: var(--card);
+    padding: 40px 48px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(16, 24, 40, 0.1);
+    text-align: center;
+    width: 100%;
+    min-width: 380px;
+    max-width: 400px;
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), #42a5f5);
+    display: grid;
+    place-items: center;
+    color: white;
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0 auto 12px;
+}
+
+.auth-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .auth-form input {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(0,0,0,0.1);
+        font-size: 14px;
+    }
+
+.btn {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 0;
+    cursor: pointer;
+    font-weight: 600;
+    background: var(--card);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+    .btn.primary {
+        background: #47ac4e;
+        color: white;
+    }
+
+.muted {
+    color: var(--muted);
+}
+
+.small {
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+.inf {
+    text-align: left !important;
+    font-family: Poppins;
+    margin: 10px 0 2px 3px;
+    font-size: 15px;
+}
+
+html {
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+

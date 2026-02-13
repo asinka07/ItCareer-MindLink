@@ -1,0 +1,152 @@
+﻿@page "/"
+@inject NavigationManager NavManager
+
+<link href="css/mindlink-index.css" rel="stylesheet" />
+
+<PageTitle>MindLink — Дневник за настроението</PageTitle>
+
+<div class="container" role="main" aria-labelledby="heroTitle">
+    <header class="topbar">
+        <div class="brand">
+            <div class="logo">ML</div>
+            <div>
+                <h1>MindLink</h1>
+                <p>Пиши. Анализираме. Подпомагаме.</p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn" id="demoBtn" title="Демо">Демо</button>
+            <button class="btn" @onclick="GoToLogin">Вход</button>
+            <button class="btn primary" @onclick="GoToRegister">Регистрация</button>
+        </div>
+    </header>
+
+    <section class="hero" aria-labelledby="heroTitle">
+        <h2 id="heroTitle">Как се чувстваш днес?</h2>
+        <p>Напиши кратка бележка — системата ще анализира настроението и ще предложи ресурси.</p>
+
+        <div class="quick-card">
+            <div class="input-area">
+                <textarea id="note"
+                          placeholder="Пишете тук... например: Днес се чувствам изморена и тревожна."></textarea>
+
+                <div style="display:flex;flex-direction:column">
+                    <button class="analyze-btn" id="analyze">Анализирай</button>
+                    <button class="btn" style="margin-top:8px" id="clearBtn">Изчисти</button>
+                </div>
+            </div>
+
+            <div id="out" class="result" style="display:none">
+                <div class="dot" id="outDot"></div>
+                <div>
+                    <div class="label" id="outLabel"></div>
+                    <div class="muted" id="outText"></div>
+                </div>
+            </div>
+        </div>
+
+        <p style="margin-top:16px;color:var(--muted)">
+            MindLink не е заместител на психотерапия. Ако се чувстваш в опасност — потърси помощ веднага.
+        </p>
+    </section>
+
+    <aside class="side">
+        <div class="card">
+            <h3>Как работи</h3>
+            <div class="steps">
+                <div class="step"><div class="icon">1</div><div><strong>Пиши</strong><div class="muted">Записвай как премина денят ти.</div></div></div>
+                <div class="step"><div class="icon">2</div><div><strong>Анализираме</strong><div class="muted">Симулиран анализ на настроение.</div></div></div>
+                <div class="step"><div class="icon">3</div><div><strong>Подпомагаме</strong><div class="muted">Съвети и ресурси.</div></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Защо MindLink?</h3>
+            <p class="muted">Проект за училищна среда — дискретен и френдли.</p>
+        </div>
+
+        <div class="card" id="resources" style="display:none">
+            <h3>Предложени ресурси</h3>
+            <ul id="resList" class="muted"></ul>
+        </div>
+    </aside>
+
+    <footer>
+        <div class="muted">© MindLink — Проект за емоционално благополучие</div>
+        <div class="muted">Демо версия • Без регистрация</div>
+    </footer>
+</div>
+
+<script>
+    const analyzeBtn = document.getElementById('analyze');
+    const noteEl = document.getElementById('note');
+    const out = document.getElementById('out');
+    const outDot = document.getElementById('outDot');
+    const outLabel = document.getElementById('outLabel');
+    const outText = document.getElementById('outText');
+    const resCard = document.getElementById('resources');
+    const resList = document.getElementById('resList');
+    const demoBtn = document.getElementById('demoBtn');
+
+    const keywords = {
+      happy: {words:['щаст','рад','радост','довол'], score:2, label:'Позитивно', color:'#16a34a', tips:['Слушай любимата си музика','Сподели усмивката си с приятел']},
+      neutral: {words:['нормал','добре','ок','споко'], score:0, label:'Неутрално', color:'#f59e0b', tips:['Може да запазиш рутината за баланс']},
+      sad: {words:['тъг','самот','притесн','депрес','умор','безсил'], score:-2, label:'Тревожно/Негативно', color:'#ef4444', tips:['Опитай кратка разходка','Пиши за това, което те тревожи','Поговори с близък']},
+    };
+
+    function analyzeText(text){
+      const lower = text.toLowerCase();
+      let score = 0;
+      for(const key in keywords){
+        keywords[key].words.forEach(w=>{
+          if(lower.includes(w)) score += keywords[key].score;
+        })
+      }
+      if(score > 0) return {label:keywords.happy.label,color:keywords.happy.color, tips:keywords.happy.tips};
+      if(score === 0) return {label:keywords.neutral.label,color:keywords.neutral.color, tips:keywords.neutral.tips};
+      return {label:keywords.sad.label,color:keywords.sad.color, tips:keywords.sad.tips};
+    }
+
+    analyzeBtn.addEventListener('click', ()=>{
+      const text = noteEl.value.trim();
+      if(!text){ alert('Напиши нещо за анализ.'); noteEl.focus(); return; }
+      const res = analyzeText(text);
+      out.style.display='flex';
+      outDot.style.background = res.color;
+      outLabel.textContent = res.label;
+      outText.textContent = 'Анализът е демонстрационен — показва вероятно настроение.';
+      resCard.style.display = 'block';
+      resList.innerHTML = '';
+      res.tips.forEach(t=>{
+        const li = document.createElement('li');
+        li.textContent = t;
+        resList.appendChild(li);
+      });
+    });
+
+    demoBtn.addEventListener('click', ()=>{
+      noteEl.value = 'Днес съм много уморена и тревожна от изпитите.';
+      analyzeBtn.click();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', ()=>{ noteEl.value=''; out.style.display='none'; resCard.style.display='none' });
+
+    // Simple accessibility: Enter on textarea + ctrl+enter triggers analyze
+    noteEl.addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && e.key === 'Enter'){ analyzeBtn.click(); }
+    });
+
+</script>
+
+@code {
+    void GoToLogin()
+    {
+        NavManager.NavigateTo("/login");
+    }
+
+    void GoToRegister()
+    {
+        NavManager.NavigateTo("/signup");
+    }
+}

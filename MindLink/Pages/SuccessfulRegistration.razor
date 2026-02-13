@@ -1,0 +1,27 @@
+﻿@page "/success"
+@using MindLink.Data.Models
+@using MindLink.Data.Services
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Identity;
+
+<link href="css/mindlink-entry.css" rel="stylesheet" />
+
+<PageTitle>Успешна регистрация</PageTitle>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Успешна регистрация</title>
+</head>
+<body>
+<div class="auth-container">
+        <div class="auth-card" style="max-height: 240px!important; min-height: 240px!important; max-width: 800px!important; min-width: 800px!important;">
+        <div class="logo">ML</div>
+        <h5>Добре дошли!</h5>
+        <p class="muted">Вие успешно се регистрирахте в MindLink ✨</p>
+
+        <p class="muted small">
+            <a href="/login">Влез в профила си</a>
+        </p>
+    </div>
+</div>
+</body>

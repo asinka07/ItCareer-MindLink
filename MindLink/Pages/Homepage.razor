@@ -1,0 +1,130 @@
+﻿@page "/homepage"
+@using MindLink.Data.Models
+@using MindLink.Data.Services
+@inject UserSessionService Session
+@inject NavigationManager Nav
+@inject MindLink.Data.MindLinkDbContext DbContext
+<link href="css/Homepage.css" rel="stylesheet" />
+
+<PageTitle>MindLink - Начало</PageTitle>
+
+<h1 class="page-title">
+	<svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+		 stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+		 style="vertical-align: -2px; margin-right: 8px; fill: #bdfffe; stroke: #9df2a3">
+		<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />
+	</svg>
+	Твоето лично пространство
+</h1>
+<p class="page-subtitle">
+
+	Тук можеш да напишеш всичко. Без осъждане. Без бързане.
+</p>
+<div style="display: flex; flex-direction: column;">
+	@if (!HasRecord)
+	{
+		<div class="empty-state collapsible @(HasRecord ? "collapsed" : "")">
+			<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+				<path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z" />
+			</svg>
+			<p style="margin-bottom:0;">Днес още не си писал.<br>Ако имаш нужда – това място е тук за теб.</p>
+		</div>
+	}
+	else
+	{
+		<div class="written-state collapsible">
+			<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-calendar-heart-fill" viewBox="0 0 16 16">
+				<path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M8 7.993c1.664-1.711 5.825 1.283 0 5.132-5.825-3.85-1.664-6.843 0-5.132" />
+			</svg>
+			<p style="margin-bottom:0;">Записа мислите си днес.<br>Искаш ли да добавиш още нещо?</p>
+		</div>
+	}
+	<div style="display: flex; flex-direction: row; width:100%; gap:20px;">
+		<div class="journal-card" style="flex:5;">
+
+		<div class="card-header">
+			<span class="date">📅 @DateTime.Now.ToString("dd MMMM yyyy")</span>
+			<span class="mood-hint">Как мина денят ти?</span>
+		</div>
+		<textarea class="journal-textarea"
+				  placeholder="Напиши как се чувстваш днес... Може да е едно изречение или цяла история." @bind-value="@record.RecordText"
+				  @bind-value:event="oninput"></textarea>
+
+
+
+		<div class="card-actions">
+			<button class="btn saveNote" @onclick="Save">Запази</button>
+			<button class="btn clearText" @onclick="Clear">Изчисти</button>
+		</div>
+	</div>
+
+		<div class="writing-prompts">
+
+			<div class="mood-select">
+				<span class="mood-emoji">&#128512;</span>
+				<span class="mood-emoji">&#128578;</span>
+				<span class="mood-emoji">&#128528;</span>
+				<span class="mood-emoji">&#128577;</span>
+				<span class="mood-emoji">&#128542;</span>
+			</div>
+
+			<div class="prompts">
+				<div class="prompt">
+					<span class="icon">💭</span>
+					<span>Какво те зарадва днес?</span>
+				</div>
+
+				<div class="prompt">
+					<span class="icon">🌱</span>
+					<span>Какво те натовари?</span>
+				</div>
+
+				<div class="prompt">
+					<span class="icon">✨</span>
+					<span>За какво си благодарна?</span>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+</div>
+
+
+@code {
+	RecordsService _recordsService = null!;
+	Record record = new Record();
+
+	public bool HasRecord; // need to check db
+
+	protected override async void OnInitialized()
+	{
+		if (!Session.IsLoggedIn)
+		{
+			Nav.NavigateTo("/login");
+		}
+		_recordsService = new RecordsService(DbContext);
+		var item = await _recordsService.GetAllRecordsByUser(Session?.CurrentUser?.UserCode!);
+		HasRecord = item.Any(x => x.RecordDate.Day == DateTime.Now.Day);
+		if (HasRecord)
+		{
+			var items = await _recordsService.GetAllRecordsByUser(Session?.CurrentUser?.UserCode!);
+			record = items.Where(x => x.RecordDate.Day == DateTime.Now.Day).FirstOrDefault();
+		}
+	}
+
+	private void Save()
+	{
+		record.UserCode = Session?.CurrentUser?.UserCode!;
+		record.RecordRate = 1; //to be changed
+		record.ResourceText = ""; //to be changed
+		_recordsService.CreateRecord(record);
+		record = new Record();
+	}
+
+	private void Clear()
+	{
+		record = new Record();
+		StateHasChanged();
+	}
+}

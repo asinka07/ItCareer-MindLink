@@ -1,0 +1,94 @@
+@page "/login"
+@inject UserSessionService Session
+@inject NavigationManager Nav
+@inject MindLink.Data.MindLinkDbContext DbContext
+@using Microsoft.AspNetCore.Identity
+@using MindLink.Data.Models
+@using MindLink.Data.Services
+<link href="css/mindlink-entry.css" rel="stylesheet" />
+
+<PageTitle>Вход в ML</PageTitle>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Вход в ML</title>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="logo">ML</div>
+            <h2>Вход в MindLink</h2>
+            <p class="muted">Добре дошъл обратно 🌿</p>
+
+            <form class="auth-form">
+                <label class="inf">Потребителско име</label>
+                <input type="email" placeholder="user_example" @bind-value="Username" @bind-value:event="oninput" required />
+
+                <label class="inf">Парола</label>
+                <input type="password" placeholder="••••••••••" @bind-value="@password" required />
+
+                <button type="button" class="btn primary" disabled="@IsButtonDisabled" @onclick="@Log">Вход</button>
+            </form>
+
+            <p class="muted small">
+                Нямаш акаунт?
+                <a href="/signup">Регистрирай се</a>
+            </p>
+        </div>
+    </div>
+</body>
+@code {
+    UsersService _usersService = null!;
+    List<User> allUsers = new List<User>();
+    User user = new User();
+
+    string password = string.Empty;
+    private string username = string.Empty;
+    string Username
+    {
+        get => username;
+        set
+        {
+            username = value;
+            FindUser();
+        }
+    }
+
+    bool IsButtonDisabled => user == null || string.IsNullOrWhiteSpace(password);
+
+    protected override async void OnInitialized()
+    {
+        _usersService = new UsersService(DbContext);
+        allUsers = await _usersService.GetAllUsers();
+    }
+
+    private void FindUser()
+    {
+        user = allUsers.FirstOrDefault(x => x.Username == username);
+    }
+
+    private void Log()
+    {
+        if (ValidUser())
+        {
+            Session.LogIn(user);
+            user.LastLogin = DateTime.Now;
+            _usersService.LogUser(user);
+            Nav.NavigateTo("/homepage");
+        }
+    }
+
+    private bool ValidUser()
+    {
+        PasswordHasher<object> hasher = new PasswordHasher<object>();
+
+        PasswordVerificationResult result = hasher.VerifyHashedPassword(user, user.Password, password);
+
+        if (result == PasswordVerificationResult.Success)
+        {
+            return true;
+        }
+        return false;
+    }
+}

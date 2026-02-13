@@ -1,0 +1,33 @@
+@inherits LayoutComponentBase
+@inject NavigationManager NavManager
+<link href="css/NavMenu.css" rel="stylesheet" />
+<link href="css/site.css" rel="stylesheet" />
+
+
+<PageTitle>MindLink</PageTitle>
+
+<div class="page">
+	@if (!IsLoginOrHomePage)
+	{
+		<div class="sidebar">
+			<NavMenu />
+		</div>
+	}
+	<main>
+		@if (!IsLoginOrHomePage)
+		{
+			<div class="top-row px-4">
+				<a href="/myprofile" target="_blank">Акаунт</a>
+			</div>
+		}
+		<article class="content px-4">
+			@Body
+		</article>
+	</main>
+
+</div>
+
+@code {
+	private bool IsLoginOrHomePage =>
+		NavManager.Uri.EndsWith("/") || NavManager.Uri.Contains("login", StringComparison.OrdinalIgnoreCase) || NavManager.Uri.Contains("signup", StringComparison.OrdinalIgnoreCase) || NavManager.Uri.Contains("success", StringComparison.OrdinalIgnoreCase);
+}
