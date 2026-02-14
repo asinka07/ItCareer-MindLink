@@ -21,7 +21,7 @@ public class UsersService
     public async Task CreateUser(User user)
     {
         var hasher = new PasswordHasher<object>();
-        user.Password = hasher.HashPassword(null, user.Password);
+        user.Password = hasher.HashPassword(user, user.Password);
         if (user.Birthday == null)
         {
             user.Birthday = DateTime.Now;

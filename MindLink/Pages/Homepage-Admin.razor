@@ -32,7 +32,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var user in users)
+                @foreach (var user in users.Where(x => x.UserCode != "111111"))
                 {
                     <tr>
                         @{
@@ -209,6 +209,7 @@
 	private string ConfirmPassword;
 
 	UsersService _usersService = null;
+	LogsService _logsService = null;
 	User currentUser = new User();
 	List<User> users = new List<User>();
 
@@ -237,6 +238,7 @@
 	{
 		base.OnInitialized();
 		_usersService = new UsersService(DbContext);
+		_logsService = new LogsService(DbContext);
 		users = await _usersService.GetAllUsers();
 		StateHasChanged();
 	}
@@ -274,19 +276,22 @@
 		if (!VerifyUser())
 			return;
 
-		currentUser.Password = Password;
-		currentUser.UserCode = GenerateUniqueUserCode();
+		currentUser.Password = Password;;
 
 		if (isAdding)
 		{
 			currentUser.Name = firstName + " " + lastName;
+			currentUser.UserCode = GenerateUniqueUserCode();
 			await _usersService.CreateUser(currentUser);
+			await _logsService.CreateLog(currentUser, "Успешно създаден потребител от Админ");
 			users.Add(currentUser);
 		}
 		else
 		{
 			currentUser.Name = firstName + " " + lastName;
 			await _usersService.UpdateUser(currentUser);
+			await _usersService.UpdatePassword(currentUser);
+			await _logsService.CreateLog(currentUser, "Успешно променени данни от Админ");
 		}
 		submitAttempted = false;
 		isEditOpen = false;
@@ -340,10 +345,11 @@
 
     void CloseDelete() => isDeleteOpen = false;
 
-    void ConfirmDelete()
+    async void ConfirmDelete()
     {
         users.Remove(currentUser);
-        _usersService.DeleteUser(currentUser);
+        await _usersService.DeleteUser(currentUser);
+		await _logsService.CreateLog(currentUser, "Успешно изтрит от Админ");
         isDeleteOpen = false;
     }
 

@@ -14,6 +14,7 @@ public class MindLinkDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<Record> Records => Set<Record>();
+    public DbSet<Log> Log => Set<Log>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

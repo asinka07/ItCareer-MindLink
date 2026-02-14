@@ -18,5 +18,6 @@
         public DateTime Birthday { get; set; }
 
         public ICollection<Record> Records { get; set; } = new List<Record>();
+        public ICollection<Log> Logs { get; set; } = new List<Log>();
     }
 }

@@ -1,11 +1,14 @@
 ﻿@page "/users-logs"
+@using MindLink.Data.Models
+@using MindLink.Data.Services
+@inject MindLink.Data.MindLinkDbContext DbContext
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="css/admin.css" rel="stylesheet" />
 
 <PageTitle>MindLink - История на влизанията</PageTitle>
 
 <div class="users-header">
-    <input type="text" placeholder="Търси потребител..." class="search-input" @bind="searchTerm" @bind:event="oninput" />
+    <input type="text" placeholder="Търси потребител..." class="search-input" @bind="searchStr" @bind:event="oninput" />
 </div>
 
 <table class="users-table">
@@ -17,13 +20,13 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var entry in FilteredHistory)
+        @foreach (var entry in logs.OrderByDescending(x => x.Date))
         {
             <tr>
-                <td>@entry.LoginTime.ToString("dd.MM.yyyy HH:mm")</td>
-                <td>@entry.Username</td>
+                <td>@entry.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@entry.User.Username</td>
                 <td>
-                    <span class="@(entry.Status == "Успешно" ? "status-success" : "status-fail")">
+                    <span class="@(entry.Status.Contains("У") ? "status-success" : "status-fail")">
                         @entry.Status
                     </span>
                 </td>
@@ -33,26 +36,45 @@
 </table>
 
 @code {
-    private string searchTerm = "";
+	private bool submitAttempted = false;
 
-    private List<LoginEntry> loginHistory = new List<LoginEntry>
-    {
-        new LoginEntry { Username = "ivan.ivanov", LoginTime = DateTime.Now.AddHours(-1), Status = "Успешно" },
-        new LoginEntry { Username = "maria.petkova", LoginTime = DateTime.Now.AddHours(-2), Status = "Неуспешно" },
-        new LoginEntry { Username = "georgi.stoyanov", LoginTime = DateTime.Now.AddDays(-1), Status = "Успешно" },
-        new LoginEntry { Username = "ana.dimitrova", LoginTime = DateTime.Now.AddDays(-2), Status = "Успешно" },
-    };
+	string firstName = string.Empty;
+	string lastName = string.Empty;
 
-    private IEnumerable<LoginEntry> FilteredHistory => 
-        string.IsNullOrWhiteSpace(searchTerm)
-        ? loginHistory
-        : loginHistory.Where(e => e.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+	LogsService _logsService = null;
+	List<Log> logs = new List<Log>();
 
-    private class LoginEntry
-    {
-        public string Username { get; set; }
-        public DateTime LoginTime { get; set; }
-        public string Status { get; set; }
-    }
+	private string searchStr;
+
+	private string SearchStr
+	{
+		get => searchStr;
+		set
+		{
+			searchStr = value;
+			_ = Search();
+		}
+	}
+
+	protected override async void OnInitialized()
+	{
+		base.OnInitialized();
+		_logsService = new LogsService(DbContext);
+		logs = await _logsService.GetAllLogs();
+		StateHasChanged();
+	}
+	async Task Search()
+	{
+		if (!string.IsNullOrEmpty(searchStr))
+		{
+			logs = logs.Where(x => x.User.Username.Contains(searchStr, StringComparison.OrdinalIgnoreCase) ||
+				x.Status.Contains(searchStr, StringComparison.OrdinalIgnoreCase)).ToList();
+		}
+		else
+		{
+			logs = await _logsService.GetAllLogs();
+		}
+		StateHasChanged();
+	}
 }
 

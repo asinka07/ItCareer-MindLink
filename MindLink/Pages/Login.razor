@@ -59,6 +59,7 @@
 
 @code {
     UsersService _usersService = null!;
+    LogsService _logsService = null!;
     List<User> allUsers = new List<User>();
     User user = new User();
 
@@ -85,6 +86,7 @@
     {
         Session.LogOut();
         _usersService = new UsersService(DbContext);
+        _logsService = new LogsService(DbContext);
         allUsers = await _usersService.GetAllUsers();
     }
 
@@ -95,7 +97,7 @@
 
     private bool submitAttempted = false;
 
-    private void Log()
+    private async void Log()
     {
         submitAttempted = true;
 
@@ -106,19 +108,29 @@
 
         FindUser();
 
+
         if (ValidUser() && user.RoleId == 1)
         {
             Session.LogIn(user);
             user.LastLogin = DateTime.Now;
-            _usersService.LogUser(user);
+            await _usersService.LogUser(user);
+            await _logsService.CreateLog(user, "Успешен вход");
             Nav.NavigateTo("/homepage");
+
         }
         else if (ValidUser() && user.RoleId == 2)
         {
             Session.LogIn(user);
             user.LastLogin = DateTime.Now;
-            _usersService.LogUser(user);
+            await _usersService.LogUser(user);
+            await _logsService.CreateLog(user, "Успешен вход");
             Nav.NavigateTo("/admin-panel");
+        }
+        else
+        {
+            user = allUsers.Where(s => s.UserCode == "111111").Single();
+            await _logsService.CreateLog(user, "Неуспешен вход");
+            return;
         }
     }
 
@@ -127,8 +139,10 @@
         if (user == null || string.IsNullOrWhiteSpace(Password))
             return false;
 
-        PasswordHasher<object> hasher = new PasswordHasher<object>();
+        var hasher = new PasswordHasher<User>();
+
         var result = hasher.VerifyHashedPassword(user, user.Password, Password);
+
         return result == PasswordVerificationResult.Success;
     }
 }
