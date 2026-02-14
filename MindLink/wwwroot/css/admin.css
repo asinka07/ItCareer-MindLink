@@ -393,3 +393,13 @@ li {
     gap: 12px;
     margin-top: 4px;
 }
+
+.status-success {
+    color: #10B981;
+    font-weight: bold;
+}
+
+.status-fail {
+    color: #EF4444;
+    font-weight: bold;
+}

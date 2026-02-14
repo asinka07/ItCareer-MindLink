@@ -1,0 +1,58 @@
+﻿@page "/users-logs"
+<link href="css/Homepage.css" rel="stylesheet" />
+<link href="css/admin.css" rel="stylesheet" />
+
+<PageTitle>MindLink - История на влизанията</PageTitle>
+
+<div class="users-header">
+    <input type="text" placeholder="Търси потребител..." class="search-input" @bind="searchTerm" @bind:event="oninput" />
+</div>
+
+<table class="users-table">
+    <thead>
+        <tr>
+            <th>Дата и час</th>
+            <th>Потребител</th>
+            <th>Статус</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entry in FilteredHistory)
+        {
+            <tr>
+                <td>@entry.LoginTime.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@entry.Username</td>
+                <td>
+                    <span class="@(entry.Status == "Успешно" ? "status-success" : "status-fail")">
+                        @entry.Status
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private string searchTerm = "";
+
+    private List<LoginEntry> loginHistory = new List<LoginEntry>
+    {
+        new LoginEntry { Username = "ivan.ivanov", LoginTime = DateTime.Now.AddHours(-1), Status = "Успешно" },
+        new LoginEntry { Username = "maria.petkova", LoginTime = DateTime.Now.AddHours(-2), Status = "Неуспешно" },
+        new LoginEntry { Username = "georgi.stoyanov", LoginTime = DateTime.Now.AddDays(-1), Status = "Успешно" },
+        new LoginEntry { Username = "ana.dimitrova", LoginTime = DateTime.Now.AddDays(-2), Status = "Успешно" },
+    };
+
+    private IEnumerable<LoginEntry> FilteredHistory => 
+        string.IsNullOrWhiteSpace(searchTerm)
+        ? loginHistory
+        : loginHistory.Where(e => e.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    private class LoginEntry
+    {
+        public string Username { get; set; }
+        public DateTime LoginTime { get; set; }
+        public string Status { get; set; }
+    }
+}
+

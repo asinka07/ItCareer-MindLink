@@ -57,6 +57,8 @@
 				@if (!isEditing)
 				{
 					<button class="btn btnFontSize editBtn" @onclick="EnableEdit">Редактирай</button>
+					<button class="btn btnFontSize delete-btn" @onclick="OpenDeleteAccountModal">Изтрий акаунт</button>
+
 				}
 				else
 				{
@@ -86,6 +88,20 @@
 	</div>
 }
 
+@if (showDeleteAccountModal)
+{
+    <div class="modal-backdrop">
+        <div class="modal deleteAcc-modal">
+            <h3>Изтриване на акаунт</h3>
+            <p>Сигурни ли сте, че искате да изтриете акаунта си? Това действие е необратимо.</p>
+            <div class="modal-actions">
+				<button class="btn delete-btn" @onclick="DeleteAccount">Изтрий</button>
+                <button class="btn cancelBtn" @onclick="CloseDeleteAccountModal">Отказ</button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
 	UsersService _usersService = null!;
 	User user = new User();
@@ -102,6 +118,8 @@
 
 	bool isEditing = false;
 	bool showChangePasswordModal = false;
+
+	bool showDeleteAccountModal = false;
 
 
 	protected override void OnInitialized()
@@ -182,4 +200,20 @@
 		gender = user.Gender;
 		isEditing = false;
 	}
+
+	private void OpenDeleteAccountModal()
+    {
+        showDeleteAccountModal = true;
+    }
+
+    private void CloseDeleteAccountModal()
+    {
+        showDeleteAccountModal = false;
+    }
+
+    private void DeleteAccount()
+    {
+        _usersService.DeleteUser(user);
+        Nav.NavigateTo("/login");
+    }
 }
