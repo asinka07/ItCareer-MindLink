@@ -11,8 +11,7 @@
 <div class="admin-page">
     <div class="users-section">
         <div class="users-header">
-            <input type="text" placeholder="Search user..." class="search-input" />
-            <button class="btn addBtn" @onclick="OpenAddUser">
+			<input type="text" placeholder="Search user..." class="search-input" @bind="SearchStr" @bind:event="oninput" />            <button class="btn addBtn" @onclick="OpenAddUser">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" style="margin-right: 5px; margin-bottom: 3px;" viewBox="0 0 16 16">
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
@@ -44,7 +43,7 @@
                         <td>@firstName</td>
                         <td>@lastName</td>
                         <td>@user.Username</td>
-                        <td>@(user.RoleId == 1 ? "User" : "SuperAdmin")</td>
+                        <td>@(user.RoleId == 1 ? "Потребител" : "Администратор")</td>
                         <td>@user.CreatedAt.Date</td>
                         <td>
                             <button class="btn editBtn" @onclick="() => OpenEdit(user)">
@@ -195,25 +194,25 @@
 </div>
 
 @code {
-    private bool submitAttempted = false;
+	private bool submitAttempted = false;
 
-    bool isEditOpen = false;
-    bool isAdding = false;
-    bool isDeleteOpen = false;
-        private bool isDropdownOpen = false;
+	bool isEditOpen = false;
+	bool isAdding = false;
+	bool isDeleteOpen = false;
+	private bool isDropdownOpen = false;
 	private string selectedRoleLabel = "- -  Изберете роля  - -";
 
-    string firstName = string.Empty;
-    string lastName = string.Empty;
+	string firstName = string.Empty;
+	string lastName = string.Empty;
 
-    			private string Password;
-		private string ConfirmPassword;
+	private string Password;
+	private string ConfirmPassword;
 
-    UsersService _usersService = null;
-    User currentUser = new User();
-    List<User> users = new List<User>();
+	UsersService _usersService = null;
+	User currentUser = new User();
+	List<User> users = new List<User>();
 
-    	private bool IsPasswordVisible = false;
+	private bool IsPasswordVisible = false;
 	private bool IsConfirmPasswordVisible = false;
 
 	private string PasswordInputType => IsPasswordVisible ? "text" : "password";
@@ -222,57 +221,116 @@
 	private bool IsMale() => currentUser.Gender == 'm';
 	private bool IsFemale() => currentUser.Gender == 'f';
 
-    protected override async void OnInitialized()
-    {
-        base.OnInitialized();
-        _usersService = new UsersService(DbContext);
-        users = await _usersService.GetAllUsers();
-        StateHasChanged();
-    }
+	private string searchStr;
 
-    void OpenEdit(User user)
-    {
-        currentUser = user;
-        int index = user.Name.IndexOf(' ');
-        firstName = user.Name.Substring(0, index);
-        lastName = user.Name.Substring(index + 1);
-        isAdding = false;
-        isEditOpen = true;
-    }
+	private string SearchStr
+	{
+		get => searchStr;
+		set
+		{
+			searchStr = value;
+			_ = Search();
+		}
+	}
 
-    void OpenAddUser()
-    {
-        currentUser = new User();
-        firstName = string.Empty;
-        lastName = string.Empty;
-        isAdding = true;
-        isEditOpen = true;
-    }
+	protected override async void OnInitialized()
+	{
+		base.OnInitialized();
+		_usersService = new UsersService(DbContext);
+		users = await _usersService.GetAllUsers();
+		StateHasChanged();
+	}
 
-    void CloseEdit() => isEditOpen = false;
+	void OpenEdit(User user)
+	{
+		currentUser = user;
+		int index = user.Name.IndexOf(' ');
+		firstName = user.Name.Substring(0, index);
+		lastName = user.Name.Substring(index + 1);
+		isAdding = false;
+		isEditOpen = true;
+	}
 
-    void SaveUser()
-    {
-        submitAttempted = true; 
+	void OpenAddUser()
+	{
+		currentUser = new User();
+		firstName = string.Empty;
+		lastName = string.Empty;
+		isAdding = true;
+		isEditOpen = true;
+	}
 
-        if (!VerifyUser())
-        return;
+	void CloseEdit()
+	{ 
+		isEditOpen = false;
+		submitAttempted = false;
+		StateHasChanged();
+	}
 
-        if (isAdding)
-        {
-            _usersService.CreateUser(currentUser);
-            currentUser.Name = firstName + " " + lastName;
-            users.Add(currentUser);
-        }
-        else
-        {
-            currentUser.Name = firstName + " " + lastName;
-            _usersService.UpdateUser(currentUser);
-        }
-            submitAttempted = false;
-        isEditOpen = false;
-        StateHasChanged();
-    }
+	async void SaveUser()
+	{
+		submitAttempted = true; 
+
+		if (!VerifyUser())
+			return;
+
+		currentUser.Password = Password;
+		currentUser.UserCode = GenerateUniqueUserCode();
+
+		if (isAdding)
+		{
+			currentUser.Name = firstName + " " + lastName;
+			await _usersService.CreateUser(currentUser);
+			users.Add(currentUser);
+		}
+		else
+		{
+			currentUser.Name = firstName + " " + lastName;
+			await _usersService.UpdateUser(currentUser);
+		}
+		submitAttempted = false;
+		isEditOpen = false;
+		StateHasChanged();
+	}
+
+	private static string GenerateCode()
+	{
+		const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		Random random = new Random();
+		return new string(Enumerable.Repeat(chars, 6)
+			.Select(s => s[random.Next(s.Length)]).ToArray());
+	}
+
+	private string GenerateUniqueUserCode()
+	{
+		string code;
+		do
+		{
+			code = GenerateCode();
+		}
+		while (UserCodeExists(code));
+
+		return code;
+	}
+
+	private bool UserCodeExists(string code)
+	{
+		return _usersService.IsCodeExisting(code);
+	}
+
+	async Task Search()
+	{
+		if (!string.IsNullOrEmpty(searchStr))
+		{
+			users = users.Where(x => x.Name.Contains(searchStr, StringComparison.OrdinalIgnoreCase) ||
+				x.Role.Name.Contains(searchStr, StringComparison.OrdinalIgnoreCase)).ToList();
+		}
+		else
+		{
+			users = await _usersService.GetAllUsers();
+		}
+		StateHasChanged();
+	}
 
     void OpenDelete(User user)
     {
@@ -341,7 +399,7 @@ private void SelectGender(char gender)
     private bool VerifyRole() => selectedRoleLabel != "- -  Изберете роля  - -";
 	private bool VerifyPassword()
 	{
-		var pw = currentUser.Password?.Trim() ?? "";
+		var pw = Password?.Trim() ?? "";
 		return pw.Length >= 12 &&
 			   pw.Any(char.IsUpper) &&
 			   pw.Any(char.IsLower) &&
@@ -350,6 +408,6 @@ private void SelectGender(char gender)
 	}
 
 private bool VerifyConfirmPassword() =>
-    (currentUser.Password?.Trim() ?? "") == (ConfirmPassword?.Trim() ?? "");
+    (Password?.Trim() ?? "") == (ConfirmPassword?.Trim() ?? "");
 
 }

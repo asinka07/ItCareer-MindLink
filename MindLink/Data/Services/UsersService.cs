@@ -22,6 +22,10 @@ public class UsersService
     {
         var hasher = new PasswordHasher<object>();
         user.Password = hasher.HashPassword(null, user.Password);
+        if (user.Birthday == null)
+        {
+            user.Birthday = DateTime.Now;
+        }
         user.LastLogin = DateTime.Now;
         user.CreatedAt = DateTime.Now;
         user.RoleId = 1;
