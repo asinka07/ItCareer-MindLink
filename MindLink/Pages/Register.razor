@@ -79,7 +79,7 @@
 				<div class="field">
 					<label>Парола</label>
 					<div class="password-wrapper">
-						<input type="text" @bind="user.Password" placeholder="••••••••••" />
+						<input type="@PasswordInputType" @bind="user.Password" placeholder="••••••••••" />
 						<button type="button" class="eye-btn" @onclick="TogglePasswordVisibility">
 							@(IsPasswordVisible ? "🙈" : "👁️")
 						</button>
@@ -96,7 +96,7 @@
 				<div class="field">
 					<label>Потвърди парола</label>
 					<div class="password-wrapper">
-						<input type="text" @bind="ConfirmPassword" placeholder="••••••••••" />
+						<input type="@ConfirmPasswordInputType" @bind="ConfirmPassword" placeholder="••••••••••" />
 						<button type="button" class="eye-btn" @onclick="ToggleConfirmPasswordVisibility">
 							@(IsConfirmPasswordVisible ? "🙈" : "👁️")
 						</button>

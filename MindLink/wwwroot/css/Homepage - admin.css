@@ -60,8 +60,10 @@
 }
 
 .edit-panel {
+    position: absolute;
+    right: 0;
     background: #fef3c7;
-    width: 400px;
+    width: fit-content;
     padding: 24px;
     height: 100%;
     box-shadow: -5px 0 30px rgba(0,0,0,0.2);
@@ -92,6 +94,48 @@
 .delete-btn {
     box-shadow: 1px 1px 3px 1px darkgray;
 }
+
+.addBtn {
+    box-shadow: 1px 1px 3px 1px darkgray;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+    .addBtn:hover {
+        background: #ffeda4;
+        color: #92400e;
+    }
+
+.editBtn {
+    box-shadow: 1px 1px 3px 1px darkgray;
+    background: #bdfffe;
+    color: #064c46;
+}
+
+    .editBtn:hover {
+        background: #abe9e8;
+        color: #023934;
+    }
+
+.saveBtn {
+    box-shadow: 1px 1px 3px 1px darkgray;
+    background: #9df2a3;
+    color: #064c46;
+}
+
+    .saveBtn:hover {
+        background: #8ee494;
+    }
+
+.cancelBtn {
+    box-shadow: 1px 1px 3px 1px darkgray;
+    background: #e5e7eb;
+    color: #333;
+}
+
+    .cancelBtn:hover {
+        background: #d1d5db;
+    }
 
 .modal-overlay {
     position: fixed;
@@ -129,3 +173,203 @@
         gap: 10px;
         margin-top: 20px;
     }
+
+.input-error {
+    border-color: #EF4444;
+}
+
+.dropdown-btn {
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px; 
+    padding: 8px 12px; 
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.dropdown-label {
+    color: dimgray;
+    font-size: 14px;
+    flex-grow: 1; 
+}
+
+.dropdown-arrow {
+    width: 18px;
+    height: 18px;
+    color: #777;
+    transition: transform 0.25s ease;
+    margin-right: 0 !important;
+}
+
+    .dropdown-arrow.open {
+        transform: rotate(180deg);
+    }
+
+
+.dropdown-field {
+    position: relative;
+    width: 100%;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    display: none;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin-top: 0px;
+    z-index: 100;
+}
+
+    .dropdown-menu.show {
+        display: block;
+    }
+
+    .dropdown-menu li {
+        padding: 8px 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .dropdown-menu li:hover {
+            background: #f0f0f0;
+        }
+
+.dropdown-field {
+    display: flex;
+}
+
+select {
+    flex: 1;
+}
+
+select {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #fff;
+    padding: 10px;
+    transition: 0.4s;
+}
+
+    select:hover,
+    select:focus {
+        background: #eee;
+    }
+
+    select::picker-icon {
+        color: #999999;
+        transition: 0.4s rotate;
+    }
+
+    select:open::picker-icon {
+        rotate: 180deg;
+    }
+
+::picker(select) {
+    border: none;
+}
+
+.role-select {
+    height: 37.45px;
+}
+
+option {
+    display: flex;
+    justify-content: flex-start;
+    gap: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #eeeeee;
+    padding: 5px;
+    transition: 0.4s;
+}
+
+    option:first-of-type {
+        border-radius: 8px 8px 0 0;
+    }
+
+    option:last-of-type {
+        border-radius: 0 0 8px 8px;
+    }
+
+::picker(select) {
+    border-radius: 8px;
+}
+
+option:not(option:last-of-type) {
+    border-bottom: none;
+}
+
+option:nth-of-type(odd) {
+    background: white;
+}
+
+option:hover,
+option:focus {
+    background: plum;
+}
+
+option .icon {
+    font-size: 1.6rem;
+}
+
+selectedcontent .icon {
+    display: none;
+}
+
+option:checked {
+    font-weight: bold;
+}
+
+::picker(select) {
+    opacity: 0;
+    transition: all 0.4s allow-discrete;
+}
+
+    ::picker(select):popover-open {
+        opacity: 1;
+    }
+
+
+::picker(select) {
+    top: calc(anchor(bottom) + 1px);
+}
+
+.options {
+    margin-left: 35px;
+    gap: 20px;
+    display: flex
+}
+
+.demo-date-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+    .demo-date-picker > * {
+        margin: 0 !important;
+    }
+
+
+.dropdown-options {
+    font-size: 14px;
+    font-family: inherit;
+}
+
+li {
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.dropdown-label.selected {
+    color: black;
+    text-align: left;
+}
+
+

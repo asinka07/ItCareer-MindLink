@@ -1,7 +1,7 @@
 @inherits LayoutComponentBase
 @inject NavigationManager NavManager
-<link href="/css/custom-navbar.css" rel="stylesheet" />
 <link href="/css/site.css" rel="stylesheet" />
+<link href="/css/custom-navbar.css" rel="stylesheet" />
 
 
 <PageTitle>MindLink</PageTitle>
@@ -17,8 +17,26 @@
 		@if (!IsLoginOrHomePage)
 		{
 			<div class="top-row px-4">
-				<a href="/myprofile" target="_blank">Акаунт</a>
-			</div>
+				<div class="profile-wrapper">
+		<button class="profile-trigger" @onclick="ToggleDropdown">
+			Име Фамилия
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style="width: 35px; fill: lightseagreen;">
+				<path d="M463 448.2C440.9 409.8 399.4 384 352 384L288 384C240.6 384 199.1 409.8 177 448.2C212.2 487.4 263.2 512 320 512C376.8 512 427.8 487.3 463 448.2zM64 320C64 178.6 178.6 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C178.6 576 64 461.4 64 320zM320 336C359.8 336 392 303.8 392 264C392 224.2 359.8 192 320 192C280.2 192 248 224.2 248 264C248 303.8 280.2 336 320 336z"/>
+			</svg>
+		</button>
+
+		@if (isDropdownOpen)
+		{
+			<div class="dropdown-custom">
+        <div @onclick="GoToProfile">Профил</div>
+        <div @onclick="Logout" style="border: none!important;">Изход</div>
+    </div>
+		}
+	</div>
+
+			</div>	
+
+			
 		}
 		<article class="content px-4">
 			@Body
@@ -30,4 +48,74 @@
 @code {
 	private bool IsLoginOrHomePage =>
 		NavManager.Uri.EndsWith("/") || NavManager.Uri.Contains("login", StringComparison.OrdinalIgnoreCase) || NavManager.Uri.Contains("signup", StringComparison.OrdinalIgnoreCase) || NavManager.Uri.Contains("success", StringComparison.OrdinalIgnoreCase);
+
+		private bool isDropdownOpen = false;
+
+private void ToggleDropdown()
+{
+	isDropdownOpen = !isDropdownOpen;
 }
+
+private void GoToProfile()
+{
+	isDropdownOpen = false;
+	NavManager.NavigateTo("/myprofile");
+}
+
+private void Logout()
+{
+	isDropdownOpen = false;
+	NavManager.NavigateTo("/login");
+}
+}
+
+		<style>
+			.profile-trigger {
+	background: none;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 500;
+}
+
+.profile-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-custom {
+    flex-direction: column;
+    display: flex;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border-radius: 12px; 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    min-width: 150px;
+    z-index: 9999;
+    overflow: hidden; 
+}
+
+.dropdown-custom div {
+    padding: 7px 10px;
+    border-bottom: 1px solid lightgray;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-custom div:last-child {
+    border-bottom: none;
+}
+
+.dropdown-custom div:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 0; 
+}
+
+
+
+			</style>
