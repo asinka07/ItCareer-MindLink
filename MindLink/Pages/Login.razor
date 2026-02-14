@@ -113,7 +113,7 @@
             _usersService.LogUser(user);
             Nav.NavigateTo("/homepage");
         }
-        else
+        else if (ValidUser() && user.RoleId == 2)
         {
             Session.LogIn(user);
             user.LastLogin = DateTime.Now;
