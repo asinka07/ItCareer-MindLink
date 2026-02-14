@@ -72,22 +72,69 @@
                 <div class="field">
                     <label>Име</label>
                     <input type="text" placeholder="Име" @bind-value="@firstName"/>
+                    @if (submitAttempted && !VerifyFirstName())
+					{
+						<div class="text-danger">Моля, въведете име (минимум 2 символа)</div>
+					}
                 </div>
                 <div class="field">
                     <label>Фамилия</label>
                     <input type="text" placeholder="Фамилия" @bind-value="@lastName" />
+                    @if (submitAttempted && !VerifyLastName())
+					{
+						<div class="text-danger">Моля, въведете фамилия (минимум 2 символа)</div>
+					}
                 </div>
+                <div class="field">
+					<label>Пол</label>
+					<div class="gender-options">
+						<label style="gap: 10px; display: flex!important;">
+							<input type="radio" name="gender" checked="@IsMale()" @onclick="() => SelectGender('m')" /> Мъж
+						</label>
+						<label style="gap: 10px; display: flex!important;">
+							<input type="radio" name="gender" checked="@IsFemale()" @onclick="() => SelectGender('f')" /> Жена
+						</label>
+					</div>
+                    @if (submitAttempted && !VerifyGender())
+					{
+						<div class="text-danger">Моля, изберете пол</div>
+					}
+				</div>
                 <div class="field">
                     <label>Потребителско име</label>
                     <input type="text" placeholder="Потребителско име" @bind-value="@currentUser.Username"/>
+                @if (submitAttempted && !VerifyUsername())
+				{
+					<div class="text-danger">Потребителското име е заето</div>
+				}
                 </div>
                 <div class="field">
                     <label>Парола</label>
-                    <input type="text" placeholder="••••••••••" @bind-value="@currentUser.Username"/>
-                </div>
+                    <div class="password-wrapper">
+						<input type="@PasswordInputType" @bind="Password" placeholder="••••••••••" />
+						<button type="button" class="eye-btn" @onclick="TogglePasswordVisibility">
+							@(IsPasswordVisible ? "🙈" : "👁️")
+						</button>
+					</div>   
+                    @if (submitAttempted && !VerifyPassword())
+					{
+						<div class="text-danger">
+							Паролата трябва да е поне 12 символа и да съдържа главна, малка буква, цифра и символ
+						</div>
+					}
+                 </div>
                 <div class="field">
                     <label>Потвърдете паролата</label>
-                    <input type="password" placeholder="••••••••••" @bind-value="@currentUser.Username"/>
+                    <div class="password-wrapper">
+						<input type="@ConfirmPasswordInputType" @bind="ConfirmPassword" placeholder="••••••••••" />
+						<button type="button" class="eye-btn" @onclick="ToggleConfirmPasswordVisibility">
+							@(IsConfirmPasswordVisible ? "🙈" : "👁️")
+						</button>
+					</div>  
+                    @if (submitAttempted && !VerifyConfirmPassword())
+					{
+						<div class="text-danger">Паролите не съвпадат</div>
+					}
                 </div>
 
                 <div class="field">
@@ -116,6 +163,12 @@
 							</li>
 						</ul>
 					</div>
+                    @if (submitAttempted && !VerifyPassword())
+					{
+						<div class="text-danger">
+                            Изберете роля!
+						</div>
+					}
                 </div>
 
                 <div class="edit-actions">
@@ -142,6 +195,8 @@
 </div>
 
 @code {
+    private bool submitAttempted = false;
+
     bool isEditOpen = false;
     bool isAdding = false;
     bool isDeleteOpen = false;
@@ -151,9 +206,21 @@
     string firstName = string.Empty;
     string lastName = string.Empty;
 
+    			private string Password;
+		private string ConfirmPassword;
+
     UsersService _usersService = null;
     User currentUser = new User();
     List<User> users = new List<User>();
+
+    	private bool IsPasswordVisible = false;
+	private bool IsConfirmPasswordVisible = false;
+
+	private string PasswordInputType => IsPasswordVisible ? "text" : "password";
+	private string ConfirmPasswordInputType => IsConfirmPasswordVisible ? "text" : "password";
+
+	private bool IsMale() => currentUser.Gender == 'm';
+	private bool IsFemale() => currentUser.Gender == 'f';
 
     protected override async void OnInitialized()
     {
@@ -186,6 +253,11 @@
 
     void SaveUser()
     {
+        submitAttempted = true; 
+
+        if (!VerifyUser())
+        return;
+
         if (isAdding)
         {
             _usersService.CreateUser(currentUser);
@@ -197,6 +269,7 @@
             currentUser.Name = firstName + " " + lastName;
             _usersService.UpdateUser(currentUser);
         }
+            submitAttempted = false;
         isEditOpen = false;
         StateHasChanged();
     }
@@ -238,4 +311,45 @@
 		};
 		isDropdownOpen = false;
 	}
+
+
+private void TogglePasswordVisibility()
+{
+	IsPasswordVisible = !IsPasswordVisible;
+}
+
+private void ToggleConfirmPasswordVisibility()
+{
+	IsConfirmPasswordVisible = !IsConfirmPasswordVisible;
+}
+
+private void SelectGender(char gender)
+	{
+		currentUser.Gender = gender;
+	}
+
+    private bool VerifyUser() =>
+    VerifyFirstName() && VerifyLastName() && VerifyGender() &&
+    VerifyUsername() && VerifyPassword() && VerifyConfirmPassword() && VerifyRole();
+
+	private bool VerifyFirstName() => !string.IsNullOrWhiteSpace(firstName) && firstName.Length >= 2;
+	private bool VerifyLastName() => !string.IsNullOrWhiteSpace(lastName) && lastName.Length >= 2;
+	private bool VerifyGender() => currentUser.Gender == 'm' || currentUser.Gender == 'f';
+    private bool VerifyUsername() => 
+    !string.IsNullOrWhiteSpace(currentUser.Username) && 
+    !users.Any(u => u.Username == currentUser.Username && u != currentUser);    
+    private bool VerifyRole() => selectedRoleLabel != "- -  Изберете роля  - -";
+	private bool VerifyPassword()
+	{
+		var pw = currentUser.Password?.Trim() ?? "";
+		return pw.Length >= 12 &&
+			   pw.Any(char.IsUpper) &&
+			   pw.Any(char.IsLower) &&
+			   pw.Any(char.IsDigit) &&
+			   pw.Any(c => !char.IsLetterOrDigit(c));
+	}
+
+private bool VerifyConfirmPassword() =>
+    (currentUser.Password?.Trim() ?? "") == (ConfirmPassword?.Trim() ?? "");
+
 }

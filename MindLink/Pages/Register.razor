@@ -134,6 +134,10 @@
 	User user = new User();
 	private List<User> allUsers = new List<User>();
 	bool isValidPassword = false;
+		private bool IsPasswordVisible = false;
+	private bool IsConfirmPasswordVisible = false;
+	private string PasswordInputType => IsPasswordVisible ? "text" : "password";
+	private string ConfirmPasswordInputType => IsConfirmPasswordVisible ? "text" : "password";
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -165,12 +169,6 @@
 
 		Nav.NavigateTo("/success");
 	}
-
-	private bool IsPasswordVisible = false;
-	private bool IsConfirmPasswordVisible = false;
-
-	private string PasswordInputType => IsPasswordVisible ? "text" : "password";
-	private string ConfirmPasswordInputType => IsConfirmPasswordVisible ? "text" : "password";
 
 	private void TogglePasswordVisibility()
 	{
