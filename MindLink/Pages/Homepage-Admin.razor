@@ -1,7 +1,6 @@
 ﻿@page "/admin-panel"
 @using MindLink.Data.Models
 @using MindLink.Data.Services
-@using MindLink.Data.Services
 @inject MindLink.Data.MindLinkDbContext DbContext
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="css/admin.css" rel="stylesheet" />
@@ -11,7 +10,8 @@
 <div class="admin-page">
     <div class="users-section">
         <div class="users-header">
-			<input type="text" placeholder="Search user..." class="search-input" @bind="SearchStr" @bind:event="oninput" />            <button class="btn addBtn" @onclick="OpenAddUser">
+            <input type="text" placeholder="Search user..." class="search-input" @bind="SearchStr" @bind:event="oninput" />
+            <button class="btn addBtn" @onclick="OpenAddUser">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" style="margin-right: 5px; margin-bottom: 3px;" viewBox="0 0 16 16">
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
@@ -72,104 +72,92 @@
                     <label>Име</label>
                     <input type="text" placeholder="Име" @bind-value="@firstName"/>
                     @if (submitAttempted && !VerifyFirstName())
-					{
-						<div class="text-danger">Моля, въведете име (минимум 2 символа)</div>
-					}
+                    {
+                        <div class="text-danger">Моля, въведете име (минимум 2 символа)</div>
+                    }
                 </div>
                 <div class="field">
                     <label>Фамилия</label>
                     <input type="text" placeholder="Фамилия" @bind-value="@lastName" />
                     @if (submitAttempted && !VerifyLastName())
-					{
-						<div class="text-danger">Моля, въведете фамилия (минимум 2 символа)</div>
-					}
+                    {
+                        <div class="text-danger">Моля, въведете фамилия (минимум 2 символа)</div>
+                    }
                 </div>
                 <div class="field">
-					<label>Пол</label>
-					<div class="gender-options">
-						<label style="gap: 10px; display: flex!important;">
-							<input type="radio" name="gender" checked="@IsMale()" @onclick="() => SelectGender('m')" /> Мъж
-						</label>
-						<label style="gap: 10px; display: flex!important;">
-							<input type="radio" name="gender" checked="@IsFemale()" @onclick="() => SelectGender('f')" /> Жена
-						</label>
-					</div>
+                    <label>Пол</label>
+                    <div class="gender-options">
+                        <label style="gap: 10px; display: flex!important;">
+                            <input type="radio" name="gender" checked="@IsMale()" @onclick="() => SelectGender('m')" /> Мъж
+                        </label>
+                        <label style="gap: 10px; display: flex!important;">
+                            <input type="radio" name="gender" checked="@IsFemale()" @onclick="() => SelectGender('f')" /> Жена
+                        </label>
+                    </div>
                     @if (submitAttempted && !VerifyGender())
-					{
-						<div class="text-danger">Моля, изберете пол</div>
-					}
-				</div>
+                    {
+                        <div class="text-danger">Моля, изберете пол</div>
+                    }
+                </div>
                 <div class="field">
                     <label>Потребителско име</label>
                     <input type="text" placeholder="Потребителско име" @bind-value="@currentUser.Username"/>
-                @if (submitAttempted && !VerifyUsername())
-				{
-					<div class="text-danger">Потребителското име е заето</div>
-				}
+                    @if (submitAttempted && !VerifyUsername())
+                    {
+                        <div class="text-danger">Потребителското име е заето</div>
+                    }
                 </div>
                 <div class="field">
                     <label>Парола</label>
                     <div class="password-wrapper">
-						<input type="@PasswordInputType" @bind="Password" placeholder="••••••••••" />
-						<button type="button" class="eye-btn" @onclick="TogglePasswordVisibility">
-							@(IsPasswordVisible ? "🙈" : "👁️")
-						</button>
-					</div>   
+                        <input type="@PasswordInputType" @bind="Password" placeholder="••••••••••" />
+                        <button type="button" class="eye-btn" @onclick="TogglePasswordVisibility">
+                            @(IsPasswordVisible ? "🙈" : "👁️")
+                        </button>
+                    </div>   
                     @if (submitAttempted && !VerifyPassword())
-					{
-						<div class="text-danger">
-							Паролата трябва да е поне 12 символа и да съдържа главна, малка буква, цифра и символ
-						</div>
-					}
-                 </div>
+                    {
+                        <div class="text-danger">
+                            Паролата трябва да е поне 12 символа и да съдържа главна, малка буква, цифра и символ
+                        </div>
+                    }
+                </div>
                 <div class="field">
                     <label>Потвърдете паролата</label>
                     <div class="password-wrapper">
-						<input type="@ConfirmPasswordInputType" @bind="ConfirmPassword" placeholder="••••••••••" />
-						<button type="button" class="eye-btn" @onclick="ToggleConfirmPasswordVisibility">
-							@(IsConfirmPasswordVisible ? "🙈" : "👁️")
-						</button>
-					</div>  
+                        <input type="@ConfirmPasswordInputType" @bind="ConfirmPassword" placeholder="••••••••••" />
+                        <button type="button" class="eye-btn" @onclick="ToggleConfirmPasswordVisibility">
+                            @(IsConfirmPasswordVisible ? "🙈" : "👁️")
+                        </button>
+                    </div>  
                     @if (submitAttempted && !VerifyConfirmPassword())
-					{
-						<div class="text-danger">Паролите не съвпадат</div>
-					}
+                    {
+                        <div class="text-danger">Паролите не съвпадат</div>
+                    }
                 </div>
-
                 <div class="field">
                     <label class="inf">Роля</label>
-					<div class="dropdown-field">
-						<button class="input-fields dropdown-btn" type="button" @onclick="ToggleDropdown">
-							<span class="dropdown-label @(currentUser.RoleId > 0 ? "selected" : "")">@selectedRoleLabel</span>
-
-							<svg class="dropdown-arrow @(isDropdownOpen ? "open" : "")"
-								 xmlns="http://www.w3.org/2000/svg"
-								 viewBox="0 0 24 24">
-								<path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2"
-									  stroke-linecap="round" stroke-linejoin="round" />
-							</svg>
-						</button>
-						@if (isDropdownOpen)
-						{
-							<div class="dropdown-backdrop" @onclick="CloseDropdown"></div>
-						}
-						<ul class="dropdown-menu @(isDropdownOpen ? "show" : "")">
-							<li @onclick="() => SelectRole(1)">
-								<span class="dropdown-options">Потребител</span>
-							</li>
-							<li @onclick="() => SelectRole(3)">
-								<span class="dropdown-options">Администратор</span>
-							</li>
-						</ul>
-					</div>
-                    @if (submitAttempted && !VerifyPassword())
-					{
-						<div class="text-danger">
-                            Изберете роля!
-						</div>
-					}
+                    <div class="dropdown-field">
+                        <button class="input-fields dropdown-btn" type="button" @onclick="ToggleDropdown">
+                            <span class="dropdown-label @(currentUser.RoleId > 0 ? "selected" : "")">@selectedRoleLabel</span>
+                            <svg class="dropdown-arrow @(isDropdownOpen ? "open" : "")" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                        @if (isDropdownOpen)
+                        {
+                            <div class="dropdown-backdrop" @onclick="CloseDropdown"></div>
+                        }
+                        <ul class="dropdown-menu @(isDropdownOpen ? "show" : "")">
+                            <li @onclick="() => SelectRole(1)"><span class="dropdown-options">Потребител</span></li>
+                            <li @onclick="() => SelectRole(2)"><span class="dropdown-options">Администратор</span></li>
+                        </ul>
+                    </div>
+                    @if (submitAttempted && !VerifyRole())
+                    {
+                        <div class="text-danger">Изберете роля!</div>
+                    }
                 </div>
-
                 <div class="edit-actions">
                     <button class="btn saveBtn" @onclick="SaveUser">@(isAdding ? "Добави" : "Запази")</button>
                     <button class="btn cancelBtn" @onclick="CloseEdit">Откажи</button>
@@ -194,220 +182,133 @@
 </div>
 
 @code {
-	private bool submitAttempted = false;
+    private bool submitAttempted = false;
+    bool isEditOpen = false;
+    bool isAdding = false;
+    bool isDeleteOpen = false;
+    private bool isDropdownOpen = false;
+    private string selectedRoleLabel = "- -  Изберете роля  - -";
+    string firstName = string.Empty;
+    string lastName = string.Empty;
+    private string Password;
+    private string ConfirmPassword;
+    UsersService _usersService = null!;
+    User currentUser = new User();
+    List<User> users = new List<User>();
+    List<User> allUsers = new List<User>();
+    private bool IsPasswordVisible = false;
+    private bool IsConfirmPasswordVisible = false;
+    private string PasswordInputType => IsPasswordVisible ? "text" : "password";
+    private string ConfirmPasswordInputType => IsConfirmPasswordVisible ? "text" : "password";
+    private string searchStr;
+    private string SearchStr { get => searchStr; set { searchStr = value; _ = Search(); } }
+    private bool IsMale() => currentUser.Gender == 'm';
+    private bool IsFemale() => currentUser.Gender == 'f';
 
-	bool isEditOpen = false;
-	bool isAdding = false;
-	bool isDeleteOpen = false;
-	private bool isDropdownOpen = false;
-	private string selectedRoleLabel = "- -  Изберете роля  - -";
+    protected override async void OnInitialized()
+    {
+        base.OnInitialized();
+        _usersService = new UsersService(DbContext);
+        allUsers = await _usersService.GetAllUsers();
+        users = new List<User>(allUsers);
+        StateHasChanged();
+    }
 
-	string firstName = string.Empty;
-	string lastName = string.Empty;
-
-	private string Password;
-	private string ConfirmPassword;
-
-	UsersService _usersService = null;
-	User currentUser = new User();
-	List<User> users = new List<User>();
-
-	private bool IsPasswordVisible = false;
-	private bool IsConfirmPasswordVisible = false;
-
-	private string PasswordInputType => IsPasswordVisible ? "text" : "password";
-	private string ConfirmPasswordInputType => IsConfirmPasswordVisible ? "text" : "password";
-
-	private bool IsMale() => currentUser.Gender == 'm';
-	private bool IsFemale() => currentUser.Gender == 'f';
-
-	private string searchStr;
-
-	private string SearchStr
-	{
-		get => searchStr;
-		set
-		{
-			searchStr = value;
-			_ = Search();
-		}
-	}
-
-	protected override async void OnInitialized()
-	{
-		base.OnInitialized();
-		_usersService = new UsersService(DbContext);
-		users = await _usersService.GetAllUsers();
-		StateHasChanged();
-	}
-
-	void OpenEdit(User user)
-	{
-		currentUser = user;
-		int index = user.Name.IndexOf(' ');
-		firstName = user.Name.Substring(0, index);
-		lastName = user.Name.Substring(index + 1);
-		isAdding = false;
-		isEditOpen = true;
-	}
-
-	void OpenAddUser()
-	{
-		currentUser = new User();
-		firstName = string.Empty;
-		lastName = string.Empty;
-		isAdding = true;
-		isEditOpen = true;
-	}
-
-	void CloseEdit()
-	{ 
-		isEditOpen = false;
-		submitAttempted = false;
-		StateHasChanged();
-	}
-
-	async void SaveUser()
-	{
-		submitAttempted = true; 
-
-		if (!VerifyUser())
-			return;
-
-		currentUser.Password = Password;
-		currentUser.UserCode = GenerateUniqueUserCode();
-
-		if (isAdding)
-		{
-			currentUser.Name = firstName + " " + lastName;
-			await _usersService.CreateUser(currentUser);
-			users.Add(currentUser);
-		}
-		else
-		{
-			currentUser.Name = firstName + " " + lastName;
-			await _usersService.UpdateUser(currentUser);
-		}
-		submitAttempted = false;
-		isEditOpen = false;
-		StateHasChanged();
-	}
-
-	private static string GenerateCode()
-	{
-		const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-		Random random = new Random();
-		return new string(Enumerable.Repeat(chars, 6)
-			.Select(s => s[random.Next(s.Length)]).ToArray());
-	}
-
-	private string GenerateUniqueUserCode()
-	{
-		string code;
-		do
-		{
-			code = GenerateCode();
-		}
-		while (UserCodeExists(code));
-
-		return code;
-	}
-
-	private bool UserCodeExists(string code)
-	{
-		return _usersService.IsCodeExisting(code);
-	}
-
-	async Task Search()
-	{
-		if (!string.IsNullOrEmpty(searchStr))
-		{
-			users = users.Where(x => x.Name.Contains(searchStr, StringComparison.OrdinalIgnoreCase) ||
-				x.Role.Name.Contains(searchStr, StringComparison.OrdinalIgnoreCase)).ToList();
-		}
-		else
-		{
-			users = await _usersService.GetAllUsers();
-		}
-		StateHasChanged();
-	}
-
-    void OpenDelete(User user)
+    void OpenEdit(User user)
     {
         currentUser = user;
-        isDeleteOpen = true;
+        int index = user.Name.IndexOf(' ');
+        firstName = user.Name.Substring(0, index);
+        lastName = user.Name.Substring(index + 1);
+        isAdding = false;
+        isEditOpen = true;
     }
 
-    void CloseDelete() => isDeleteOpen = false;
-
-    void ConfirmDelete()
+    void OpenAddUser()
     {
-        users.Remove(currentUser);
-        _usersService.DeleteUser(currentUser);
-        isDeleteOpen = false;
+        currentUser = new User();
+        firstName = string.Empty;
+        lastName = string.Empty;
+        isAdding = true;
+        isEditOpen = true;
     }
 
+    void CloseEdit()
+    { 
+        isEditOpen = false;
+        submitAttempted = false;
+        StateHasChanged();
+    }
 
-	private void ToggleDropdown()
-	{
-		isDropdownOpen = !isDropdownOpen;
-	}
+    async void SaveUser()
+    {
+        submitAttempted = true; 
+        if (!VerifyUser()) return;
+        currentUser.Password = Password;
+        currentUser.UserCode = GenerateUniqueUserCode();
+        currentUser.Name = firstName + " " + lastName;
+        if (isAdding)
+        {
+            await _usersService.CreateUser(currentUser);
+            allUsers.Add(currentUser);
+        }
+        else
+        {
+            await _usersService.UpdateUser(currentUser);
+        }
+        users = new List<User>(allUsers);
+        isEditOpen = false;
+        submitAttempted = false;
+        StateHasChanged();
+    }
 
-	private void CloseDropdown()
-	{
-		isDropdownOpen = false;
-	}
+    private static string GenerateCode()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        return new string(Enumerable.Repeat(chars, 6).Select(s => s[random.Next(s.Length)]).ToArray());
+    }
 
-	private void SelectRole(int roleId)
-	{
-		currentUser.RoleId = roleId;
-		selectedRoleLabel = roleId switch
-		{
-			1 => "Потребител",
-			2 => "Администратор",
-			_ => "- -  Изберете роля  - -"
-		};
-		isDropdownOpen = false;
-	}
+    private string GenerateUniqueUserCode()
+    {
+        string code;
+        do { code = GenerateCode(); } while (UserCodeExists(code));
+        return code;
+    }
 
+    private bool UserCodeExists(string code) => _usersService.IsCodeExisting(code);
 
-private void TogglePasswordVisibility()
-{
-	IsPasswordVisible = !IsPasswordVisible;
-}
+    async Task Search()
+    {
+        if (!string.IsNullOrWhiteSpace(searchStr))
+        {
+            users = allUsers.Where(u => u.Name.Contains(searchStr, StringComparison.OrdinalIgnoreCase) ||
+                                        u.Username.Contains(searchStr, StringComparison.OrdinalIgnoreCase) ||
+                                        u.Role.Name.Contains(searchStr, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+        else
+        {
+            users = new List<User>(allUsers);
+        }
+        StateHasChanged();
+    }
 
-private void ToggleConfirmPasswordVisibility()
-{
-	IsConfirmPasswordVisible = !IsConfirmPasswordVisible;
-}
+    void OpenDelete(User user) { currentUser = user; isDeleteOpen = true; }
+    void CloseDelete() => isDeleteOpen = false;
+    void ConfirmDelete() { users.Remove(currentUser); allUsers.Remove(currentUser); _usersService.DeleteUser(currentUser); isDeleteOpen = false; }
+    private void ToggleDropdown() { isDropdownOpen = !isDropdownOpen; }
+    private void CloseDropdown() { isDropdownOpen = false; }
+    private void SelectRole(int roleId) { currentUser.RoleId = roleId; selectedRoleLabel = roleId switch { 1 => "Потребител", 2 => "Администратор", _ => "- -  Изберете роля  - -" }; isDropdownOpen = false; }
+    private void TogglePasswordVisibility() { IsPasswordVisible = !IsPasswordVisible; }
+    private void ToggleConfirmPasswordVisibility() { IsConfirmPasswordVisible = !IsConfirmPasswordVisible; }
+    private void SelectGender(char gender) { currentUser.Gender = gender; }
 
-private void SelectGender(char gender)
-	{
-		currentUser.Gender = gender;
-	}
-
-    private bool VerifyUser() =>
-    VerifyFirstName() && VerifyLastName() && VerifyGender() &&
-    VerifyUsername() && VerifyPassword() && VerifyConfirmPassword() && VerifyRole();
-
-	private bool VerifyFirstName() => !string.IsNullOrWhiteSpace(firstName) && firstName.Length >= 2;
-	private bool VerifyLastName() => !string.IsNullOrWhiteSpace(lastName) && lastName.Length >= 2;
-	private bool VerifyGender() => currentUser.Gender == 'm' || currentUser.Gender == 'f';
-    private bool VerifyUsername() => 
-    !string.IsNullOrWhiteSpace(currentUser.Username) && 
-    !users.Any(u => u.Username == currentUser.Username && u != currentUser);    
+    private bool VerifyUser() => VerifyFirstName() && VerifyLastName() && VerifyGender() && VerifyUsername() && VerifyPassword() && VerifyConfirmPassword() && VerifyRole();
+    private bool VerifyFirstName() => !string.IsNullOrWhiteSpace(firstName) && firstName.Length >= 2;
+    private bool VerifyLastName() => !string.IsNullOrWhiteSpace(lastName) && lastName.Length >= 2;
+    private bool VerifyGender() => currentUser.Gender == 'm' || currentUser.Gender == 'f';
+    private bool VerifyUsername() => !string.IsNullOrWhiteSpace(currentUser.Username) && !users.Any(u => u.Username == currentUser.Username && u != currentUser);
     private bool VerifyRole() => selectedRoleLabel != "- -  Изберете роля  - -";
-	private bool VerifyPassword()
-	{
-		var pw = Password?.Trim() ?? "";
-		return pw.Length >= 12 &&
-			   pw.Any(char.IsUpper) &&
-			   pw.Any(char.IsLower) &&
-			   pw.Any(char.IsDigit) &&
-			   pw.Any(c => !char.IsLetterOrDigit(c));
-	}
-
-private bool VerifyConfirmPassword() =>
-    (Password?.Trim() ?? "") == (ConfirmPassword?.Trim() ?? "");
-
+    private bool VerifyPassword() { var pw = Password?.Trim() ?? ""; return pw.Length >= 12 && pw.Any(char.IsUpper) && pw.Any(char.IsLower) && pw.Any(char.IsDigit) && pw.Any(c => !char.IsLetterOrDigit(c)); }
+    private bool VerifyConfirmPassword() => (Password?.Trim() ?? "") == (ConfirmPassword?.Trim() ?? "");
 }

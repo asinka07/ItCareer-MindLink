@@ -36,7 +36,7 @@
 			<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-calendar-heart-fill" viewBox="0 0 16 16">
 				<path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M8 7.993c1.664-1.711 5.825 1.283 0 5.132-5.825-3.85-1.664-6.843 0-5.132" />
 			</svg>
-			<p style="margin-bottom:0;">Записа мислите си днес.<br>Искаш ли да добавиш още нещо?</p>
+			<p style="margin-bottom:0;">За днес имаш запис.<br>Искаш ли да добавиш още нещо?</p>
 		</div>
 	}
 	<div style="display: flex; flex-direction: row; width:100%; gap:20px;">
@@ -71,17 +71,17 @@
 			<div class="prompts">
 				<div class="prompt">
 					<span class="icon">💭</span>
-					<span>Какво те зарадва днес?</span>
+					<span>Как си??</span>
 				</div>
 
 				<div class="prompt">
 					<span class="icon">🌱</span>
-					<span>Какво те натовари?</span>
+					<span>Какво те зарадва днес?</span>
 				</div>
 
 				<div class="prompt">
 					<span class="icon">✨</span>
-					<span>За какво си благодарна?</span>
+					<span>Какво те натъжи?</span>
 				</div>
 			</div>
 
@@ -95,36 +95,40 @@
 	RecordsService _recordsService = null!;
 	Record record = new Record();
 
-
 	public bool HasRecord; // need to check db
 
-	protected override async void OnInitialized()
-	{
-		if (!Session.IsLoggedIn)
-		{
-			Nav.NavigateTo("/login");
-		}
-		_recordsService = new RecordsService(DbContext);
-		var item = await _recordsService.GetAllRecordsByUser(Session?.CurrentUser?.UserCode!);
-		HasRecord = item.Any(x => x.RecordDate.Day == DateTime.Now.Day);
-		if (HasRecord)
-		{
-			record = item.Where(x => x.RecordDate.Day == DateTime.Now.Day).FirstOrDefault();
-		}
-		StateHasChanged();
-	}
+	protected override async Task OnInitializedAsync()
+{
+    if (!Session.IsLoggedIn)
+    {
+        Nav.NavigateTo("/login");
+        return;
+    }
 
-	private void Save()
-	{
-		record.UserCode = Session?.CurrentUser?.UserCode!;
-		record.Rate = 1; //to be changed
-		_recordsService.CreateRecord(record);
-		record = new Record();
-	}
+    _recordsService = new RecordsService(DbContext);
+    var items = await _recordsService.GetAllRecordsByUser(Session?.CurrentUser?.UserCode!);
 
-	private void Clear()
-	{
-		record = new Record();
-		StateHasChanged();
-	}
+    HasRecord = items.Any(x => x.RecordDate.Date == DateTime.Now.Date);
+
+}
+
+
+private async Task Save()
+{
+    record.UserCode = Session?.CurrentUser?.UserCode!;
+    record.Rate = 1;
+
+    await _recordsService.CreateRecord(record); 
+
+    HasRecord = true;
+    record = new Record();
+    StateHasChanged();
+}
+
+private void Clear()
+{
+   record = new Record();
+   StateHasChanged();
+}
+
 }

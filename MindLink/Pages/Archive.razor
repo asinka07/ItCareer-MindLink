@@ -1,10 +1,13 @@
 ﻿@page "/archive"
+
 @inject UserSessionService Session
 @inject NavigationManager Nav
 @inject MindLink.Data.MindLinkDbContext DbContext
-@inject IJSRuntime JS;
+@inject IJSRuntime JS
+@using MindLink.Data.ViewModels
 @using MindLink.Data.Models
 @using MindLink.Data.Services
+
 <link href="/css/Homepage.css" rel="stylesheet" />
 <link href="/css/site.css" rel="stylesheet" />
 <link href="/css/MyProfile.css" rel="stylesheet" />
@@ -12,311 +15,290 @@
 
 <PageTitle>MindLink - Начало</PageTitle>
 
-@if (pages.Count >= 2)
+@if (bookPages.Count > 0)
 {
-    <!-- Previous Button -->
-    <button id="prev-btn">
-        Previous
-    </button>
-
-
-    <!-- Book -->
+    <div style="display: flex; flex-direction: column;">
     <div id="book" class="book">
-        @for (int i = 0; i < pages.Count; i++)
+        <!-- Предна корица -->
+        <div class="paper hard">
+            <div class="front">
+                <div class="front-content">
+                    <h1>Дневникът на @Session.CurrentUser?.Name</h1>
+                </div>
+            </div>
+            <div class="back"></div>
+        </div>
+
+        @foreach (var bookPage in bookPages)
         {
-            var pageParts = pages[i].Split('|');
-            var id = $"p{i + 1}";
-
-            bool isCover = i == 0 || i == pages.Count - 1;
-
-            int thickness = isCover ? 6 : 1; // корица 6px, страница 1px
-
-            <div id="@id"
-                 class="paper @(isCover ? "hard" : "")">
+            <div class="paper">
                 <div class="front">
                     <div class="front-content">
-                        @if (i == 0 || i == pages.Count - 1)
+                        @if (bookPage.LeftRecord != null)
                         {
-                            <h1>@pageParts[0]</h1>
-                        }
-                        else
-                        {
-                            @if (i + 1 < dates.Count)
-                            {
-                                <p>@dates[i + 1].Date.ToString("dd/MM/yyyy")</p>
-                            }
-                            else
-                            {
-                                <p></p>
-                            }
+                            <p>@bookPage.LeftRecord.RecordDate.ToString("dd/MM/yyyy")</p>
                             <hr />
-                            <p>@pageParts[0]</p>
-                            <hr />
-                            <p>@(1 + (i - 1) * 2)/@pages.Count</p>
+                            <p>@bookPage.LeftRecord.RecordText</p>
                         }
                     </div>
                 </div>
                 <div class="back">
                     <div class="back-content">
-                        @if (i == 0 || i == pages.Count - 1)
+                        @if (bookPage.RightRecord != null)
                         {
-                            <h1>@pageParts[1]</h1>
-                        }
-                        else
-                        {
-                            @if (i + 1 < dates.Count)
-                            {
-                                <p>@dates[i + 1].Date.ToString("dd/MM/yyyy")</p>
-                            }
-                            else
-                            {
-                                <p></p>
-                            }
+                            <p>@bookPage.RightRecord.RecordDate.ToString("dd/MM/yyyy")</p>
                             <hr />
-                            <p>@pageParts[1]</p>
-                            <hr />
-                            <p>@(1 + (i - 1) * 2 + 1)/@pages.Count</p>
+                            <p>@bookPage.RightRecord.RecordText</p>
                         }
                     </div>
                 </div>
             </div>
         }
+
+        <!-- Задна корица -->
+        <div class="paper hard">
+            <div class="front"></div>
+            <div class="back"></div>
+        </div>
     </div>
 
-    <!-- Next Button -->
-    <button id="next-btn">
-        Next
-    </button>
+
+<div class="book-controls">
+    <button id="prev-btn">&#x2190; Previous page</button>
+    <button id="next-btn">Next page &#x2192;</button>
+</div>
+            </div>
+
 }
 else
 {
     <h5>Няма записи</h5>
 }
 
+
 @code {
-    RecordsService _recordsService = null!;
+    private List<BookPage> bookPages = new();
+        RecordsService _recordsService = null!;
     List<Record> records = new List<Record>();
-    List<string> pages = new List<string>();
-    List<DateTime> dates = new List<DateTime>();
-    List<int> rates = new List<int>();
 
     int count = 0;
+    private void BuildBook()
+{
+    bookPages.Clear();
 
-    protected override async void OnInitialized()
+    for (int i = 0; i < records.Count; i += 2)
+    {
+        var page = new BookPage
+        {
+            LeftRecord = records[i],
+            RightRecord = (i + 1 < records.Count) ? records[i + 1] : null
+        };
+
+        bookPages.Add(page);
+    }
+}
+
+
+    protected override async Task OnInitializedAsync()
     {
         if (!Session.IsLoggedIn)
-        {
-            Nav.NavigateTo("/login");
-        }
-        _recordsService = new RecordsService(DbContext);
-        records = await _recordsService.GetAllRecordsByUser(Session?.CurrentUser?.UserCode!);
-        pages.Clear();
-        pages.Add($"Дневникът на {Session?.CurrentUser?.Name!}|      ");
-        for (int i = 0; i < records.Count; i += 2)
-        {
-            var first = records[i]; 
-            Record? second = (i + 1 < records.Count) ? records[i + 1] : null; 
-            string pageText = second == null ? $"{first.RecordText}|" : $"{first.RecordText}|{second.RecordText}"; 
-            pages.Add(pageText); 
-            dates.Add(first.RecordDate); 
-            dates.Add(second?.RecordDate ?? first.RecordDate); 
-            // placeholder or duplicate 
-        }
-        if (records.Count % 2 == 1)
-        {
-            pages.Add("|");
-        }
-        pages.Add("|");
-        StateHasChanged();
+    {
+        Nav.NavigateTo("/login");
+        return;
+    }
+
+    _recordsService = new RecordsService(DbContext);
+
+    records = (await _recordsService.GetAllRecordsByUser(Session.CurrentUser!.UserCode)).OrderBy(r => r.RecordDate).ToList();
+    BuildBook();
     }
 
 }
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    /* Book */
-    .book {
-        position: relative;
-        width: 350px;
-        height: 500px;
-        transition: transform 0.5s;
-    }
-
-    .paper {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        perspective: 1500px;
-    }
-
-    .front,
-    .back {
-        background-color: white;
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        transform-origin: left;
-        transition: transform 0.5s;
-    }
-
-    .front {
-        z-index: 1;
-        backface-visibility: hidden;
-        }
-
-    .back {
-        z-index: 0;
-    }
-
-    .front-content,
-    .back-content {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-
-    .back-content {
-        transform: rotateY(180deg);
-    }
-
-    /* Paper flip effect */
-    .flipped .front,
-    .flipped .back {
-        transform: rotateY(-180deg);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-
-    /* Controller Buttons */
-    button {
-        border: none;
-        background-color: transparent;
-        cursor: pointer;
-        margin: 10px;
-        transition: transform 0.5s;
-    }
-
-        button:focus {
-            outline: none;
-        }
-
-        button:hover i {
-            color: #636363;
-        }
-
-    i {
-        font-size: 50px;
-        color: gray;
-    }
-
-    .front{
-        background-image: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,245,235,0.95)), url('images/paper-texture.png'); /* ако имаш текстурно изображение */
-        background-blend-mode: multiply;
-/*         border-left: 2px solid #4a6e6e;
- */        border-radius: 2px;
- margin-left: 2px;
-        box-shadow: 0 5px 0px 0 rgba(0,0,0,0.03);
-        font-family: 'Georgia', serif;
-        font-size: 1.2rem;
-        line-height: 1.4;
-        transform-style: preserve-3d;
-    }
-
-    .back {
-        background-image: url('images/paper-texture.png'); /* ако имаш текстурно изображение */
-        background-blend-mode: multiply;
-/*         border-left: 2px solid #4a6e6e;
- */        border-radius: 2px;
-        margin-right: 2px;
-        box-shadow: 0 5px 0px 0 rgba(0,0,0,0.03);
-        font-family: 'Georgia', serif;
-        font-size: 1.2rem;
-        line-height: 1.4;
-        transform-style: preserve-3d;
-    }
-
-    /* Последната страница (корица) */
-    .paper.hard .front,
-    .paper.hard .back {
-        background-image: linear-gradient(180deg, rgba(189,255,254,0.9), rgba(157,242,163,0.9)), url('images/cover-texture.png');
-        background-blend-mode: multiply;
-        color: #fff;
-        font-weight: bold;
-        border-radius: 8px;
-        box-shadow: inset 0 0 0 4px rgba(0,60,0,0.4), 0 15px 30px rgba(0,0,0,0.4);
-    }
-
-    .paper:not(.hard) {
-        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
-        border-radius: 0px;
-    }
-
- /* Леко закръгляване на кориците */
-
-/* Леко по-тъмна граница за stack ефект */
-        .paper:not(.hard) .front,
-        .paper:not(.hard) .back {
-            border-left: 2px solid rgba(74,110,110,0.4);
-        }
-
-    .paper.hard .front,
-    .paper.hard .back {
-        border-left: none;
-    }
-
-/* Книгата като цяло */
-.book {
-    perspective: 2000px; /* за по-добър 3D ефект при flip */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-    .flipped .front {
-        box-shadow: inset -15px 0 30px rgba(0,0,0,0.15);
-    }
+/* Книгата */
+.book {
+    position: relative;
+    width: 350px;
+    height: 500px;
+}
 
-    .flipped .back {
-        box-shadow: inset 15px 0 30px rgba(0,0,0,0.15);
-    }
+/* Страници */
+.paper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    perspective: 3500px;
+}
 
-    .paper.hard {
-        transform-origin: left center;
-    }
+.front,
+.back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    transform-origin: left center;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.7s ease;
+    font-family: 'Georgia', serif;
+    font-size: 1.2rem;
+    line-height: 1.4;
+    transform-style: preserve-3d;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+        border-radius: 2px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.03);
+}
 
-    .paper.hard {
-        width: calc(100% + 5px);
-        height: calc(100% + 10px);
-        top: -5px;
-        left: 10px;
-    }
+/* Предна страница */
+.front {
+    z-index: 1;
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,245,235,0.95)), url('images/paper-texture.png');
+    background-blend-mode: multiply;
+    border-radius: 2px;
+    margin-left: 2px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.03);
+    backface-visibility: hidden;
 
-        .paper.hard .front,
-        .paper.hard .back {
-            border-radius: 12px;
-        }
+}
 
-    .paper:not(.hard) {
-        width: calc(100% - 20px); /* малко по-малки от корицата */
-        height: calc(100% - 20px);
-        top: 10px; /* центриране спрямо по-големите корици */
-        left: 10px;
-    }
+/* Задна страница */
+.back {
+    z-index: 0;
+    background-image: url('images/paper-texture.png');
+    background-blend-mode: multiply;
+    border-radius: 2px;
+    margin-right: 2px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.03);
+}
 
-        .paper:not(.hard) .front,
-        .paper:not(.hard) .back {
-            box-shadow: inset -4px 0 6px rgba(0,0,0,0.08);
-        }
+/* Съдържание на страница */
+.front-content,
+.back-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
 
+/* Задно съдържание обръщане */
+.back-content {
+    transform: rotateY(180deg);
+}
+
+/* Flip ефект */
+.flipped .front {
+    transform: rotateY(-180deg);
+    box-shadow: inset -15px 0 30px rgba(0,0,0,0.15);
+}
+
+.flipped .back {
+    transform: rotateY(-180deg);
+    box-shadow: inset 15px 0 30px rgba(0,0,0,0.15);
+}
+
+/* Корици (предна и задна) */
+.paper.hard .front,
+.paper.hard .back {
+    background-image: linear-gradient(180deg, rgba(189,255,254,0.9), rgba(157,242,163,0.9)), url('images/cover-texture.png');
+    background-blend-mode: multiply;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 4px rgba(0,60,0,0.4), 0 15px 30px rgba(0,0,0,0.4);
+    transform-origin: left center;
+    width: calc(100% + 5px);
+    height: calc(100% + 10px);
+    top: -5px;
+    left: 10px;
+}
+
+/* Останалите страници леко по-малки от корицата */
+.paper:not(.hard) {
+    transition: transform 0.6s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s;
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+    top: 10px;
+    left: 10px;
+}
+
+.paper:not(.hard) .front,
+.paper:not(.hard) .back {
+    box-shadow: inset -4px 0 6px rgba(0,0,0,0.08);
+    border-left: 2px solid rgba(74,110,110,0.4);
+}
+
+.paper.hard {
+    z-index: 1000;
+}
+
+.paper.flipped {
+    z-index: auto; 
+}
+
+.book {
+    perspective: 2000px; 
+}
+
+/* Стил на бутоните за разлистване */
+#prev-btn,
+#next-btn {
+    position: relative;
+    background-color: #10B981; /* Emerald green */
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    padding: 10px 10px;
+    margin: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+}
+
+/* Hover ефект */
+#prev-btn:hover,
+#next-btn:hover {
+    background-color: #34D399; /* lighter green */
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+/* Натискане на бутон */
+#prev-btn:active,
+#next-btn:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+#prev-btn i,
+#next-btn i {
+    font-size: 1.5rem;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.book-controls {
+    display: flex;
+    justify-content: center; 
+    gap: 20px; 
+    margin-top: 15px;
+}
 </style>
 
 @code{

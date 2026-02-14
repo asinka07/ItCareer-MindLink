@@ -1,14 +1,26 @@
 ﻿function initializeBook() {
-    const prevBtn = document.querySelector("#prev-btn");
-    const nextBtn = document.querySelector("#next-btn");
+
     const book = document.querySelector("#book");
 
-    if (!book || !prevBtn || !nextBtn) { 
-        console.warn("Book elements not found — skipping initialization."); 
+    if (!book) {
+        console.warn("Book not found.");
         return;
     }
 
-    // взимаме всички страници
+    if (book.dataset.initialized === "true") {
+        return;
+    }
+
+    book.dataset.initialized = "true";
+
+    const prevBtn = document.querySelector("#prev-btn");
+    const nextBtn = document.querySelector("#next-btn");
+
+    if (!prevBtn || !nextBtn) {
+        console.warn("Buttons not found.");
+        return;
+    }
+
     const papers = Array.from(document.querySelectorAll(".book .paper"));
     const numOfPapers = papers.length;
 
@@ -16,7 +28,7 @@
         paper.style.zIndex = numOfPapers - index;
     });
 
-    let currentLocation = 0; // започваме с първата страница не обърната
+    let currentLocation = 0;
 
     prevBtn.addEventListener("click", goPrevPage);
     nextBtn.addEventListener("click", goNextPage);
