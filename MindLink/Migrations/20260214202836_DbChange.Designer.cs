@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MindLink.Data;
 
@@ -11,9 +12,11 @@ using MindLink.Data;
 namespace MindLink.Migrations
 {
     [DbContext(typeof(MindLinkDbContext))]
-    partial class MindLinkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260214202836_DbChange")]
+    partial class DbChange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -151,32 +154,6 @@ namespace MindLink.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            UserCode = "bLZoUT",
-                            Birthday = new DateTime(2000, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2026, 2, 14, 9, 43, 19, 140, DateTimeKind.Unspecified),
-                            Gender = "m",
-                            LastLogin = new DateTime(2026, 2, 14, 22, 46, 55, 879, DateTimeKind.Unspecified).AddTicks(7045),
-                            Name = "Super Admin",
-                            Password = "AQAAAAIAAYagAAAAEJJG/NCL8BXPg/UXNCdW63SHrXqyt4M/Yuf5jkyxzlJhBUdahGYJiAJsc4ioN89azA==",
-                            RoleId = 2,
-                            Username = "admin_user"
-                        },
-                        new
-                        {
-                            UserCode = "111111",
-                            Birthday = new DateTime(2000, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2026, 2, 14, 9, 43, 19, 140, DateTimeKind.Unspecified),
-                            Gender = "f",
-                            LastLogin = new DateTime(2026, 2, 14, 22, 46, 55, 879, DateTimeKind.Unspecified).AddTicks(7045),
-                            Name = "Error",
-                            Password = "111111",
-                            RoleId = 1,
-                            Username = "Error"
-                        });
                 });
 
             modelBuilder.Entity("MindLink.Data.Models.Log", b =>

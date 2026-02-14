@@ -131,10 +131,11 @@
 	private string LastName;
 	private string ConfirmPassword;
 	UsersService _usersService = null!;
+	LogsService _logsService = null!;
 	User user = new User();
 	private List<User> allUsers = new List<User>();
 	bool isValidPassword = false;
-		private bool IsPasswordVisible = false;
+	private bool IsPasswordVisible = false;
 	private bool IsConfirmPasswordVisible = false;
 	private string PasswordInputType => IsPasswordVisible ? "text" : "password";
 	private string ConfirmPasswordInputType => IsConfirmPasswordVisible ? "text" : "password";
@@ -143,6 +144,7 @@
 	{
 		Session.LogOut();
 		_usersService = new UsersService(DbContext);
+		_logsService = new LogsService(DbContext);
 		allUsers = await _usersService.GetAllUsers();
 		user = new User();
 		ConfirmPassword = "";
@@ -161,6 +163,7 @@
 		user.UserCode = GenerateUniqueUserCode();
 
 		await _usersService.CreateUser(user);
+		await _logsService.CreateLog(user, "Успешно регистриране");
 
 		user = new User();
 		FirstName = "";

@@ -32,7 +32,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var user in users)
+                @foreach (var user in users.Where(x => x.UserCode != "111111"))
                 {
                     <tr>
                         @{
@@ -182,6 +182,33 @@
 </div>
 
 @code {
+	private bool submitAttempted = false;
+
+	bool isEditOpen = false;
+	bool isAdding = false;
+	bool isDeleteOpen = false;
+	private bool isDropdownOpen = false;
+	private string selectedRoleLabel = "- -  Изберете роля  - -";
+
+	string firstName = string.Empty;
+	string lastName = string.Empty;
+
+	private string Password;
+	private string ConfirmPassword;
+
+	UsersService _usersService = null;
+	LogsService _logsService = null;
+	User currentUser = new User();
+	List<User> users = new List<User>();
+
+	private bool IsPasswordVisible = false;
+	private bool IsConfirmPasswordVisible = false;
+
+	private string PasswordInputType => IsPasswordVisible ? "text" : "password";
+	private string ConfirmPasswordInputType => IsConfirmPasswordVisible ? "text" : "password";
+
+	private bool IsMale() => currentUser.Gender == 'm';
+	private bool IsFemale() => currentUser.Gender == 'f';
     private bool submitAttempted = false;
     bool isEditOpen = false;
     bool isAdding = false;
@@ -205,6 +232,26 @@
     private bool IsMale() => currentUser.Gender == 'm';
     private bool IsFemale() => currentUser.Gender == 'f';
 
+	private string searchStr;
+
+	private string SearchStr
+	{
+		get => searchStr;
+		set
+		{
+			searchStr = value;
+			_ = Search();
+		}
+	}
+
+	protected override async void OnInitialized()
+	{
+		base.OnInitialized();
+		_usersService = new UsersService(DbContext);
+		_logsService = new LogsService(DbContext);
+		users = await _usersService.GetAllUsers();
+		StateHasChanged();
+	}
     protected override async void OnInitialized()
     {
         base.OnInitialized();
@@ -240,6 +287,34 @@
         StateHasChanged();
     }
 
+	async void SaveUser()
+	{
+		submitAttempted = true; 
+
+		if (!VerifyUser())
+			return;
+
+		currentUser.Password = Password;;
+
+		if (isAdding)
+		{
+			currentUser.Name = firstName + " " + lastName;
+			currentUser.UserCode = GenerateUniqueUserCode();
+			await _usersService.CreateUser(currentUser);
+			await _logsService.CreateLog(currentUser, "Успешно създаден потребител от Админ");
+			users.Add(currentUser);
+		}
+		else
+		{
+			currentUser.Name = firstName + " " + lastName;
+			await _usersService.UpdateUser(currentUser);
+			await _usersService.UpdatePassword(currentUser);
+			await _logsService.CreateLog(currentUser, "Успешно променени данни от Админ");
+		}
+		submitAttempted = false;
+		isEditOpen = false;
+		StateHasChanged();
+	}
     async void SaveUser()
     {
         submitAttempted = true; 
@@ -295,6 +370,57 @@
 
     void OpenDelete(User user) { currentUser = user; isDeleteOpen = true; }
     void CloseDelete() => isDeleteOpen = false;
+
+    async void ConfirmDelete()
+    {
+        users.Remove(currentUser);
+        await _usersService.DeleteUser(currentUser);
+		await _logsService.CreateLog(currentUser, "Успешно изтрит от Админ");
+        isDeleteOpen = false;
+    }
+
+
+	private void ToggleDropdown()
+	{
+		isDropdownOpen = !isDropdownOpen;
+	}
+
+	private void CloseDropdown()
+	{
+		isDropdownOpen = false;
+	}
+
+	private void SelectRole(int roleId)
+	{
+		currentUser.RoleId = roleId;
+		selectedRoleLabel = roleId switch
+		{
+			1 => "Потребител",
+			2 => "Администратор",
+			_ => "- -  Изберете роля  - -"
+		};
+		isDropdownOpen = false;
+	}
+
+
+private void TogglePasswordVisibility()
+{
+	IsPasswordVisible = !IsPasswordVisible;
+}
+
+private void ToggleConfirmPasswordVisibility()
+{
+	IsConfirmPasswordVisible = !IsConfirmPasswordVisible;
+}
+
+private void SelectGender(char gender)
+	{
+		currentUser.Gender = gender;
+	}
+
+    private bool VerifyUser() =>
+    VerifyFirstName() && VerifyLastName() && VerifyGender() &&
+    VerifyUsername() && VerifyPassword() && VerifyConfirmPassword() && VerifyRole();
     void ConfirmDelete() { users.Remove(currentUser); allUsers.Remove(currentUser); _usersService.DeleteUser(currentUser); isDeleteOpen = false; }
     private void ToggleDropdown() { isDropdownOpen = !isDropdownOpen; }
     private void CloseDropdown() { isDropdownOpen = false; }

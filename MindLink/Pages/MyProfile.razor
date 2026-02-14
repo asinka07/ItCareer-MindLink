@@ -104,6 +104,7 @@
 
 @code {
 	UsersService _usersService = null!;
+	LogsService _logsService = null!;
 	User user = new User();
 
 	string avatar = string.Empty;
@@ -129,6 +130,7 @@
 			Nav.NavigateTo("/login");
 		}
 		_usersService = new UsersService(DbContext);
+		_logsService = new LogsService(DbContext);
 		user = Session.CurrentUser;
 		string[] nameStrings = user.Name.Split();
 		avatar = nameStrings[0].Substring(0,1) + nameStrings[1].Substring(0, 1);
@@ -150,7 +152,7 @@
 		showChangePasswordModal = false;
 	}
 
-	private void SavePassword()
+	private async void SavePassword()
 	{
 		PasswordHasher<object> hasher = new PasswordHasher<object>();
 		PasswordVerificationResult result = hasher.VerifyHashedPassword(user, user.Password, oldPassword);
@@ -161,10 +163,12 @@
 				return;
 			}
 			user.Password = newPassword;
-		    _usersService.UpdatePassword(user);
+			await _logsService.CreateLog(user, "Успешна промяна на данни");
+		    await _usersService.UpdatePassword(user);
 		}
 		else
 		{
+			await _logsService.CreateLog(user, "Неуспешна промяна на данни");
 			return;
 		}
 		CloseChangePasswordModal();
@@ -186,9 +190,10 @@
 		isEditing = true;
 	}
 
-	private void Save()
+	private async void Save()
 	{
-		_usersService.UpdateUser(user);
+		await _usersService.UpdateUser(user);
+		await _logsService.CreateLog(user, "Успешна промяна на данни");
 		isEditing = false;
 	}
 
@@ -211,9 +216,10 @@
         showDeleteAccountModal = false;
     }
 
-    private void DeleteAccount()
+    private async void DeleteAccount()
     {
-        _usersService.DeleteUser(user);
+		await _logsService.CreateLog(user, "Успешно изтриване на акаунт");
+        await _usersService.DeleteUser(user);
         Nav.NavigateTo("/login");
     }
 }
