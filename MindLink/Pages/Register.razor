@@ -76,11 +76,10 @@
 			</div>
 
 			<div class="row-passwords">
-				<!-- Парола -->
 				<div class="field">
 					<label>Парола</label>
 					<div class="password-wrapper">
-						<input type="@PasswordInputType" @bind="user.Password" placeholder="••••••••••" />
+						<input type="text" @bind="user.Password" placeholder="••••••••••" />
 						<button type="button" class="eye-btn" @onclick="TogglePasswordVisibility">
 							@(IsPasswordVisible ? "🙈" : "👁️")
 						</button>
@@ -97,7 +96,7 @@
 				<div class="field">
 					<label>Потвърди парола</label>
 					<div class="password-wrapper">
-						<input type="@ConfirmPasswordInputType" @bind="ConfirmPassword" placeholder="••••••••••" />
+						<input type="text" @bind="ConfirmPassword" placeholder="••••••••••" />
 						<button type="button" class="eye-btn" @onclick="ToggleConfirmPasswordVisibility">
 							@(IsConfirmPasswordVisible ? "🙈" : "👁️")
 						</button>
@@ -138,6 +137,7 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+		Session.LogOut();
 		_usersService = new UsersService(DbContext);
 		allUsers = await _usersService.GetAllUsers();
 		user = new User();
@@ -238,8 +238,3 @@
 	private bool VerifyConfirmPassword() =>
 		user.Password != null && user.Password == (ConfirmPassword?.Trim() ?? "");
 }
-
-<script>
-
-
-</script>

@@ -50,6 +50,19 @@ public class MindLinkDbContext : DbContext
             entity.Property(u => u.Gender)
                   .HasColumnType("char(1)");
 
+            entity.Property(u => u.CreatedAt)
+                  .HasColumnType("datetime2")
+                  .HasDefaultValueSql("GETDATE()")
+                  .IsRequired();
+
+            entity.Property(u => u.LastLogin)
+                  .HasColumnType("datetime2");
+
+            entity.HasOne(u => u.Role)
+                  .WithMany(r => r.Users)
+                  .HasForeignKey(u => u.RoleId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasOne(u => u.Role)
                   .WithMany(r => r.Users)
                   .HasForeignKey(u => u.RoleId)
@@ -75,5 +88,7 @@ public class MindLinkDbContext : DbContext
                   .HasForeignKey(r => r.UserCode)
                   .OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(MindLinkDbContext).Assembly);
     }
 }

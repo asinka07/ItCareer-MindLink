@@ -23,6 +23,8 @@ public class UsersService
         var hasher = new PasswordHasher<object>();
         user.Password = hasher.HashPassword(null, user.Password);
         user.LastLogin = DateTime.Now;
+        user.CreatedAt = DateTime.Now;
+        user.RoleId = 1;
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
     }
@@ -38,6 +40,7 @@ public class UsersService
         existing.Name = user.Name;
         existing.Gender = user.Gender;
         existing.Birthday = user.Birthday;
+        existing.RoleId = user.RoleId;
         await _context.SaveChangesAsync();
     }
 
@@ -61,6 +64,17 @@ public class UsersService
         }
         var hasher = new PasswordHasher<object>();
         user.Password = hasher.HashPassword(null, userInfo.Password);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteUser(User userInfo)
+    {
+        var user = await _context.Users.FindAsync(userInfo.UserCode);
+        if (user == null)
+        {
+            return;
+        }
+        _context.Users.Remove(user);
         await _context.SaveChangesAsync();
     }
 

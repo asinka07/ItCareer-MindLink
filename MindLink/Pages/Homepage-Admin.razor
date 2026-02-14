@@ -1,5 +1,8 @@
 ﻿@page "/admin-panel"
-
+@using MindLink.Data.Models
+@using MindLink.Data.Services
+@using MindLink.Data.Services
+@inject MindLink.Data.MindLinkDbContext DbContext
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="css/Homepage - admin.css" rel="stylesheet" />
 
@@ -33,11 +36,16 @@
                 @foreach (var user in users)
                 {
                     <tr>
-                        <td>Иван</td>
-                        <td>Иванов</td>
-                        <td>ivan123</td>
-                        <td>User</td>
-                        <td>01.01.2024</td>
+                        @{
+                            int index = user.Name.IndexOf(' ');
+                            string firstName = user.Name.Substring(0, index);
+                            string lastName = user.Name.Substring(index + 1);
+                        }
+                        <td>@firstName</td>
+                        <td>@lastName</td>
+                        <td>@user.Username</td>
+                        <td>@(user.RoleId == 1 ? "User" : "SuperAdmin")</td>
+                        <td>@user.CreatedAt.Date</td>
                         <td>
                             <button class="btn edit-btn" @onclick="() => OpenEdit(user)">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
@@ -63,26 +71,26 @@
                 <h3>@(isAdding ? "Добавяне на потребител" : "Редактиране на потребител")</h3>
                 <div class="field">
                     <label>Име</label>
-                    <input type="text" placeholder="Име" />
+                    <input type="text" placeholder="Име" @bind-value="@firstName"/>
                 </div>
                 <div class="field">
                     <label>Фамилия</label>
-                    <input type="text" placeholder="Фамилия" />
+                    <input type="text" placeholder="Фамилия" @bind-value="@lastName" />
                 </div>
                 <div class="field">
                     <label>Username</label>
-                    <input type="text" placeholder="Username" />
+                    <input type="text" placeholder="Username" @bind-value="@currentUser.Username"/>
                 </div>
                 <div class="field">
                     <label>Роля</label>
-                    <select>
-                        <option>User</option>
-                        <option>SuperAdmin</option>
+                    <select @bind="currentUser.RoleId">
+                        <option value="1">User</option>
+                        <option value="2">SuperAdmin</option>
                     </select>
                 </div>
 
                 <div class="edit-actions">
-                    <button class="btn primary" @onclick="CloseEdit">@(isAdding ? "Добави" : "Запази")</button>
+                    <button class="btn primary" @onclick="SaveUser">@(isAdding ? "Добави" : "Запази")</button>
                     <button class="btn cancelBtn" @onclick="CloseEdit">Откажи</button>
                 </div>
             </div>
@@ -94,7 +102,7 @@
         <div class="modal-overlay">
             <div class="delete-panel">
                 <h3>Изтриване на потребител</h3>
-                <p>Сигурни ли сте, че искате да изтриете потребител <strong>@currentUser.FirstName @currentUser.LastName</strong>?</p>
+                <p>Сигурни ли сте, че искате да изтриете потребител <strong>@currentUser.Name</strong>?</p>
                 <div class="edit-actions">
                     <button class="btn delete-btn" @onclick="ConfirmDelete">Изтрий</button>
                     <button class="btn cancelBtn" @onclick="CloseDelete">Откажи</button>
@@ -109,16 +117,27 @@
     bool isAdding = false;
     bool isDeleteOpen = false;
 
+    string firstName = string.Empty;
+    string lastName = string.Empty;
+
+    UsersService _usersService = null;
     User currentUser = new User();
-    List<User> users = new List<User>
+    List<User> users = new List<User>();
+
+    protected override async void OnInitialized()
     {
-        new User { FirstName = "Иван", LastName = "Иванов", Username = "ivan123", Role = "User", CreatedAt = new DateTime(2024,1,1) },
-        new User { FirstName = "Мария", LastName = "Георгиева", Username = "maria_g", Role = "SuperAdmin", CreatedAt = new DateTime(2024,3,5) }
-    };
+        base.OnInitialized();
+        _usersService = new UsersService(DbContext);
+        users = await _usersService.GetAllUsers();
+        StateHasChanged();
+    }
 
     void OpenEdit(User user)
     {
         currentUser = user;
+        int index = user.Name.IndexOf(' ');
+        firstName = user.Name.Substring(0, index);
+        lastName = user.Name.Substring(index + 1);
         isAdding = false;
         isEditOpen = true;
     }
@@ -126,6 +145,8 @@
     void OpenAddUser()
     {
         currentUser = new User();
+        firstName = string.Empty;
+        lastName = string.Empty;
         isAdding = true;
         isEditOpen = true;
     }
@@ -136,10 +157,17 @@
     {
         if (isAdding)
         {
-            currentUser.CreatedAt = DateTime.Now;
+            _usersService.CreateUser(currentUser);
+            currentUser.Name = firstName + " " + lastName;
             users.Add(currentUser);
         }
+        else
+        {
+            currentUser.Name = firstName + " " + lastName;
+            _usersService.UpdateUser(currentUser);
+        }
         isEditOpen = false;
+        StateHasChanged();
     }
 
     void OpenDelete(User user)
@@ -153,15 +181,7 @@
     void ConfirmDelete()
     {
         users.Remove(currentUser);
+        _usersService.DeleteUser(currentUser);
         isDeleteOpen = false;
-    }
-
-    public class User
-    {
-        public string FirstName { get; set; } = "";
-        public string LastName { get; set; } = "";
-        public string Username { get; set; } = "";
-        public string Role { get; set; } = "User";
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

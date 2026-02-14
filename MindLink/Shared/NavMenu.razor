@@ -1,6 +1,8 @@
+@using MindLink.Data.Services
 @inject NavigationManager NavManager
-<link href="css/site.css" rel="stylesheet" />
-<link href="css/custom-navbar.csss" rel="stylesheet" />
+@inject UserSessionService Session
+<link href="/css/site.css" rel="stylesheet" />
+<link href="/css/custom-navbar.css" rel="stylesheet" />
 
 
 <div class="top-row ps-3 navbar navbar-dark">
@@ -14,26 +16,32 @@
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/homepage" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Начало
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/archive">
-                <span class="oi oi-book" aria-hidden="true"></span> Архив
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/admin-panel">
-                <span class="oi oi-people" aria-hidden="true"></span> Потребители
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/user-logs">
-                <span class="oi oi-spreadsheet" aria-hidden="true"></span> История на влизанията
-            </NavLink>
-        </div>
+        @if (Session.IsLoggedIn && Session.CurrentUser?.RoleId == 1)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/homepage" Match="NavLinkMatch.All">
+                    <span class="oi oi-home" aria-hidden="true"></span> Начало
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/archive">
+                    <span class="oi oi-book" aria-hidden="true"></span> Архив
+                </NavLink>
+            </div>
+        }
+        @if (Session.IsLoggedIn && Session.CurrentUser?.RoleId == 2)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/admin-panel">
+                    <span class="oi oi-people" aria-hidden="true"></span> Потребители
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/user-logs">
+                    <span class="oi oi-spreadsheet" aria-hidden="true"></span> История на влизанията
+                </NavLink>
+            </div>
+        }
 @*         <div class="nav-item px-3">
             <NavLink class="nav-link" href="stats">
                 <span class="oi oi-graph" aria-hidden="true"></span> Статистика

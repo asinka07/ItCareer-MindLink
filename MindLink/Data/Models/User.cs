@@ -12,6 +12,7 @@
         public Role Role { get; set; } = null!;
 
         public DateTime LastLogin { get; set; }
+        public DateTime CreatedAt { get; set; }
         public char Gender { get; set; }
 
         public DateTime Birthday { get; set; }

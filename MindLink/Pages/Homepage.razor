@@ -4,7 +4,7 @@
 @inject UserSessionService Session
 @inject NavigationManager Nav
 @inject MindLink.Data.MindLinkDbContext DbContext
-<link href="css/Homepage.css" rel="stylesheet" />
+<link href="/css/Homepage.css" rel="stylesheet" />
 
 <PageTitle>MindLink - Начало</PageTitle>
 
@@ -108,9 +108,9 @@
 		HasRecord = item.Any(x => x.RecordDate.Day == DateTime.Now.Day);
 		if (HasRecord)
 		{
-			var items = await _recordsService.GetAllRecordsByUser(Session?.CurrentUser?.UserCode!);
-			record = items.Where(x => x.RecordDate.Day == DateTime.Now.Day).FirstOrDefault();
+			record = item.Where(x => x.RecordDate.Day == DateTime.Now.Day).FirstOrDefault();
 		}
+		StateHasChanged();
 	}
 
 	private void Save()

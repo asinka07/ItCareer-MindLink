@@ -83,6 +83,7 @@
 
     protected override async void OnInitialized()
     {
+        Session.LogOut();
         _usersService = new UsersService(DbContext);
         allUsers = await _usersService.GetAllUsers();
     }
@@ -105,12 +106,19 @@
 
         FindUser();
 
-        if (ValidUser())
+        if (ValidUser() && user.RoleId == 1)
         {
             Session.LogIn(user);
             user.LastLogin = DateTime.Now;
             _usersService.LogUser(user);
             Nav.NavigateTo("/homepage");
+        }
+        else
+        {
+            Session.LogIn(user);
+            user.LastLogin = DateTime.Now;
+            _usersService.LogUser(user);
+            Nav.NavigateTo("/admin-panel");
         }
     }
 
