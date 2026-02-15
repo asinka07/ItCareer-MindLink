@@ -1,6 +1,5 @@
-﻿function initializeBook() {
-
-    const book = document.querySelector("#book");
+﻿function initializeBookById(bookId) {
+    const book = document.getElementById(bookId);
 
     if (!book) {
         console.warn("Book not found.");
@@ -13,15 +12,15 @@
 
     book.dataset.initialized = "true";
 
-    const prevBtn = document.querySelector("#prev-btn");
-    const nextBtn = document.querySelector("#next-btn");
+    const prevBtn = document.getElementById(`prev-${bookId}`);
+    const nextBtn = document.getElementById(`next-${bookId}`);
 
     if (!prevBtn || !nextBtn) {
         console.warn("Buttons not found.");
         return;
     }
 
-    const papers = Array.from(document.querySelectorAll(".book .paper"));
+    const papers = Array.from(book.querySelectorAll(".paper"));
     const numOfPapers = papers.length;
 
     papers.forEach((paper, index) => {

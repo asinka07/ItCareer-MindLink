@@ -1,0 +1,124 @@
+﻿@using MindLink.Data.Models
+@using MindLink.Data.ViewModels
+@inject IJSRuntime JS
+
+<link href="/css/book.css" rel="stylesheet" />
+<div style="display: flex; flex-direction: column; align-items: center;">
+<div id="@BookId" class="book">
+    <div class="paper hard">
+        <div class="front">
+            <div class="front-content">
+                <h1>@Title</h1>
+            </div>
+        </div>
+        <div class="back"></div>
+    </div>
+
+    @foreach (var bookPage in Pages)
+    {
+        <div class="paper">
+            <div class="front">
+                <div class="front-content">
+                    @if (bookPage.LeftRecord != null)
+                    {
+                        <p>@bookPage.LeftRecord.RecordDate.ToString("dd/MM/yyyy")</p>
+                        <hr />
+                        <p>@bookPage.LeftRecord.RecordText</p>
+                    }
+                </div>
+            </div>
+            <div class="back">
+                <div class="back-content">
+                    @if (bookPage.RightRecord != null)
+                    {
+                        <p>@bookPage.RightRecord.RecordDate.ToString("dd/MM/yyyy")</p>
+                        <hr />
+                        <p>@bookPage.RightRecord.RecordText</p>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="paper hard">
+        <div class="front"></div>
+        <div class="back"></div>
+    </div>
+</div>
+
+<div class="book-controls">
+    <button id="prev-@BookId" class="prev-btn">&#x2190; Previous page</button>
+    <button id="next-@BookId" class="next-btn">Next page &#x2192;</button>
+</div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Дневникът";
+    [Parameter] public List<BookPage> Pages { get; set; } = new List<BookPage>();
+
+    private string BookId = $"book-{Guid.NewGuid()}";
+    private bool ShouldInitialize = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender || ShouldInitialize)
+        {
+            await JS.InvokeVoidAsync("initializeBookById", BookId);
+            ShouldInitialize = false;
+        }
+    }
+
+    public void NotifyBookOpened()
+    {
+        ShouldInitialize = true;
+        StateHasChanged(); 
+    }
+}
+
+
+    <style>
+        .prev-btn,
+.next-btn {
+    position: relative;
+    background-color: #10B981; /* Emerald green */
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    padding: 10px 10px;
+    margin: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+}
+
+    /* Hover ефект */
+    .prev-btn:hover,
+    .next-btn:hover {
+        background-color: #34D399; /* lighter green */
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Натискане на бутон */
+    .prev-btn:active,
+    .next-btn:active {
+        transform: translateY(1px) scale(0.98);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .prev-btn i,
+    .next-btn i {
+        font-size: 1.5rem;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+
+.book-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 15px;
+}
+    </style>

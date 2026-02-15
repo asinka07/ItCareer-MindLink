@@ -8,7 +8,8 @@
 <PageTitle>MindLink - История на влизанията</PageTitle>
 
 <div class="users-header">
-    <input type="text" placeholder="Търси потребител..." class="search-input" @bind="searchStr" @bind:event="oninput" />
+    <input type="text" placeholder="Търси потребител..." class="search-input" 
+           @bind="SearchStr" @bind:event="oninput" />
 </div>
 
 <table class="users-table">
@@ -20,61 +21,64 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var entry in logs.OrderByDescending(x => x.Date))
+        @if (logs.Any())
+        {
+            @foreach (var entry in logs.OrderByDescending(x => x.Date))
+            {
+                <tr>
+                    <td>@entry.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>@entry.User.Username</td>
+                    <td>
+                        <span class="@(entry.Status.Contains("У") ? "status-success" : "status-fail")">
+                            @entry.Status
+                        </span>
+                    </td>
+                </tr>
+            }
+        }
+        else
         {
             <tr>
-                <td>@entry.Date.ToString("dd.MM.yyyy HH:mm")</td>
-                <td>@entry.User.Username</td>
-                <td>
-                    <span class="@(entry.Status.Contains("У") ? "status-success" : "status-fail")">
-                        @entry.Status
-                    </span>
-                </td>
+                <td colspan="3" style="text-align:center;">Няма записи</td>
             </tr>
         }
     </tbody>
 </table>
 
 @code {
-	private bool submitAttempted = false;
+    private LogsService _logsService;
+    private List<Log> logs = new();
+    private List<Log> allLogs = new();
+    private string searchStr;
 
-	string firstName = string.Empty;
-	string lastName = string.Empty;
+    private string SearchStr
+    {
+        get => searchStr;
+        set
+        {
+            searchStr = value;
+            FilterLogs();
+        }
+    }
 
-	LogsService _logsService = null;
-	List<Log> logs = new List<Log>();
+    protected override async Task OnInitializedAsync()
+    {
+        _logsService = new LogsService(DbContext);
+        allLogs = logs = await _logsService.GetAllLogs();
+    }
 
-	private string searchStr;
-
-	private string SearchStr
-	{
-		get => searchStr;
-		set
-		{
-			searchStr = value;
-			_ = Search();
-		}
-	}
-
-	protected override async void OnInitialized()
-	{
-		base.OnInitialized();
-		_logsService = new LogsService(DbContext);
-		logs = await _logsService.GetAllLogs();
-		StateHasChanged();
-	}
-	async Task Search()
-	{
-		if (!string.IsNullOrEmpty(searchStr))
-		{
-			logs = logs.Where(x => x.User.Username.Contains(searchStr, StringComparison.OrdinalIgnoreCase) ||
-				x.Status.Contains(searchStr, StringComparison.OrdinalIgnoreCase)).ToList();
-		}
-		else
-		{
-			logs = await _logsService.GetAllLogs();
-		}
-		StateHasChanged();
-	}
+    private void FilterLogs()
+    {
+        if (string.IsNullOrWhiteSpace(searchStr))
+        {
+            logs = new List<Log>(allLogs);
+        }
+        else
+        {
+            logs = allLogs
+                .Where(x => x.User.Username.Contains(searchStr, StringComparison.OrdinalIgnoreCase) ||
+                            x.Status.Contains(searchStr, StringComparison.OrdinalIgnoreCase) || (x.User.Role?.Name?.Contains(searchStr, StringComparison.OrdinalIgnoreCase) ?? false))
+                .ToList();
+        }
+    }
 }
-
