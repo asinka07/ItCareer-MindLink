@@ -61,12 +61,24 @@ namespace MindLink.Data.Services
             var result = new List<DailyMood>();
             for (int day = 1; day <= daysInMonth; day++)
             {
-                var existing = data.FirstOrDefault(x => x.Day == day);
-                result.Add(new DailyMood
+				var existing = data.FirstOrDefault(x => x.Day == day);
+				if (day > data.Max(d => d.Day))
                 {
-                    Day = day,
-                    AverageMood = existing?.AverageMood ?? 0
-                });
+					result.Add(new DailyMood
+					{
+						Day = day,
+						AverageMood = existing?.AverageMood ?? null
+					});
+				}    
+                else
+                {
+					result.Add(new DailyMood
+					{
+						Day = day,
+						AverageMood = existing?.AverageMood ?? data.Where(d => d.Day <= day).Average(d => d.AverageMood)
+					});
+				}
+
             }
 
             return result;
