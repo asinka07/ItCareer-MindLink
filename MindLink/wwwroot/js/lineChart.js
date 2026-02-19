@@ -8,8 +8,8 @@
         datasets: [{
             label: "Средно настроение",
             data: values,
-            borderColor: "green",
-            backgroundColor: "rgba(0,200,0,0.2)",
+            borderColor: "#8bc9c9",
+            backgroundColor: "rgba(189, 255, 254,0.2)",
             fill: true,
             tension: 0.4
         }]
@@ -21,7 +21,7 @@
         options: {
             responsive: true,
             plugins: {
-                title: { display: true, text: 'Как се променя настроението ти' }
+                title: { display: true, text: 'Как се променя настроението ти', font: { size: 28 } }
             },
             interaction: { intersect: false },
             scales: {

@@ -7,7 +7,7 @@
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: ["#EF4444", "#FBBF24", "#10B981"], 
+                backgroundColor: ["#ff9696", "#ffd296", "#9df2a3"], 
                 hoverOffset: 4
             }]
         };
@@ -19,7 +19,7 @@
                 responsive: true,
                 plugins: {
                     legend: { position: 'top' },
-                    title: { display: true, text: 'Настроения за месеца' }
+                    title: { display: true, text: 'Настроения за месеца', font: { size: 28 } }
                 }
             }
         };

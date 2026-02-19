@@ -2,6 +2,7 @@
 @inject NavigationManager Nav
 @inject StatisticsService StatsService
 @inject IJSRuntime JS
+@inject UserSessionService Session
 @using Microsoft.AspNetCore.Identity
 @using MindLink.Data.ViewModels
 @using MindLink.Data.Services
@@ -31,7 +32,7 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		string userCode = "BvREsI"; // Hardcoded only for testing
+		string userCode = Session.CurrentUser.UserCode;
 		dailyMoods = await StatsService.GetDailyMoodCurrentMonthAsync(userCode);
 		stats = await StatsService.GetMonthlyStatsAsync(userCode);
 		moodCounts = await StatsService.GetMonthlyMoodCountsAsync(userCode);

@@ -5,7 +5,7 @@
         window.myChartInstance.destroy();
     }
 
-    const barColors = ["blue", "indigo", "violet", "pink"];
+    const barColors = ["#decffc"];
     const colors = values.map((v, i) => barColors[i % barColors.length]);
 
     window.myChartInstance = new Chart(ctx, {
@@ -23,7 +23,7 @@
                 title: {
                     display: true,
                     text: "Брой записи",
-                    font: { size: 16 }
+                    font: { size: 28 }
                 }
             }
         }
