@@ -1,33 +1,37 @@
 @page "/stats"
 @inject NavigationManager Nav
+@inject StatisticsService StatsService
+@inject IJSRuntime JS
 @using Microsoft.AspNetCore.Identity
-@using MindLink.Data.Models
+@using MindLink.Data.ViewModels
 @using MindLink.Data.Services
 <link href="css/site.css" rel="stylesheet" />
 <link href="css/MyProfile.css" rel="stylesheet" />
 
-<PageTitle>MindLink - Начало</PageTitle>
+<PageTitle>MindLink - Статистики</PageTitle>
 
-<div class="profile-page">
-	<div class="profile-card">
-
-		<div class="profile-left">
-			<div class="avatar">
-			</div>
-
-		</div>
-
-		<div class="profile-right">
-			<h3>Лична информация</h3>
-
-
-				
-		</div>
-	</div>
-</div>
-
+    <canvas id="myChart"></canvas>
 
 
 @code {
-	
+
+    private List<MonthlyStatistics> stats = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        string userCode = "BvREsI"; // Hardcoded only for testing
+        stats = await StatsService.GetMonthlyStatsAsync(userCode);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && stats.Any())
+        {
+            var labels = stats.Select(s => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(s.MonthId)).ToArray();
+
+            var values = stats.Select(s => s.CountOfRecords).ToArray();
+
+            await JS.InvokeVoidAsync("renderChart", labels, values);
+        }
+    }
 }
