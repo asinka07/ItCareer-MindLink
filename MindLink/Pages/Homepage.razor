@@ -4,6 +4,8 @@
 @inject UserSessionService Session
 @inject NavigationManager Nav
 @inject MindLink.Data.MindLinkDbContext DbContext
+@inject SentimentService SentimentSvc
+
 <link href="/css/Homepage.css" rel="stylesheet" />
 
 <PageTitle>MindLink - Начало</PageTitle>
@@ -116,6 +118,7 @@
 private async Task Save()
 {
     record.UserCode = Session?.CurrentUser?.UserCode!;
+	record.Sentiment = await SentimentSvc.AnalyzeAsync(record.RecordText);
     record.Rate = 1;
 
     await _recordsService.CreateRecord(record); 
