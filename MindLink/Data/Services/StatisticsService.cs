@@ -54,7 +54,7 @@ namespace MindLink.Data.Services
                 .Select(g => new DailyMood
                 {
                     Day = g.Key,
-                    AverageMood = g.Average(r => r.Rate) 
+                    AverageMood = g.Average(r => r.Rate)
                 })
                 .ToListAsync();
 
@@ -71,5 +71,21 @@ namespace MindLink.Data.Services
 
             return result;
         }
+
+        public async Task<int[]> GetMonthlyMoodCountsAsync(string userCode)
+        {
+            var now = DateTime.Now;
+
+            var records = await _context.Records
+                .Where(r => r.UserCode == userCode && r.RecordDate.Year == now.Year && r.RecordDate.Month == now.Month)
+                .ToListAsync();
+
+            int happyCount = records.Count(r => r.Sentiment == "happy");
+            int neutralCount = records.Count(r => r.Sentiment == "neutral");
+            int sadCount = records.Count(r => r.Sentiment == "sad");
+
+            return new int[] { sadCount, neutralCount, happyCount };
+        }
+
     }
 }

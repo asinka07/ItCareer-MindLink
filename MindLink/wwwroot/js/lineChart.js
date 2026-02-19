@@ -21,7 +21,7 @@
         options: {
             responsive: true,
             plugins: {
-                title: { display: true, text: 'Средно настроение по дни' }
+                title: { display: true, text: 'Как се променя настроението ти' }
             },
             interaction: { intersect: false },
             scales: {

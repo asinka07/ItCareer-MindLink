@@ -10,24 +10,31 @@
 
 <PageTitle>MindLink - Статистики</PageTitle>
 
-<div style="display: flex; flex-direction: row; width: 100dvh;">
-	<div style="display: flex; flex-direction: column; width: 50%;">
-		<canvas id="lineChart" style="width: 100%!important;"></canvas>
-		<canvas id="barChart" style="width: 100%!important;"></canvas>
+<div style="display: flex; flex-direction: row; width: 80vw; height: 80vh;">
+	<div style="display: flex; flex-direction: column; width: 50%; height: 100%;">
+		<canvas id="lineChart" style="flex: 1; width: 100%;"></canvas>
+		<canvas id="barChart" style="flex: 1; width: 100%;"></canvas>
 	</div>
-	<canvas id="barChart"></canvas>
+
+	<div style="flex: 1; display: flex; justify-content: center; align-items: center; height: 100%;">
+		<canvas id="doughnutChart" style="width: 80%; height: 80%;"></canvas>
+	</div>
 </div>
+
 
 @code {
 
 	private List<DailyMood> dailyMoods = new();
 	private List<MonthlyStatistics> stats = new();
+	private int[] moodCounts = new int[3];
+
 
 	protected override async Task OnInitializedAsync()
 	{
 		string userCode = "BvREsI"; // Hardcoded only for testing
 		dailyMoods = await StatsService.GetDailyMoodCurrentMonthAsync(userCode);
 		stats = await StatsService.GetMonthlyStatsAsync(userCode);
+		moodCounts = await StatsService.GetMonthlyMoodCountsAsync(userCode);
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -41,6 +48,9 @@
 			var labels = stats.Select(s => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(s.MonthId)).ToArray();
 			var values = stats.Select(s => s.CountOfRecords).ToArray();
 			await JS.InvokeVoidAsync("renderChart", labels, values);
+
+			var moodLabels = new string[] { "sad", "neutral", "happy" };
+			await JS.InvokeVoidAsync("renderDoughnutChart", moodLabels, moodCounts);
 
 		}
 	}
