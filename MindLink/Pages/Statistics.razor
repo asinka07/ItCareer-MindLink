@@ -10,28 +10,38 @@
 
 <PageTitle>MindLink - Статистики</PageTitle>
 
-    <canvas id="myChart"></canvas>
-
+<div style="display: flex; flex-direction: row; width: 100dvh;">
+	<div style="display: flex; flex-direction: column; width: 50%;">
+		<canvas id="lineChart" style="width: 100%!important;"></canvas>
+		<canvas id="barChart" style="width: 100%!important;"></canvas>
+	</div>
+	<canvas id="barChart"></canvas>
+</div>
 
 @code {
 
-    private List<MonthlyStatistics> stats = new();
+	private List<DailyMood> dailyMoods = new();
+	private List<MonthlyStatistics> stats = new();
 
-    protected override async Task OnInitializedAsync()
-    {
-        string userCode = "BvREsI"; // Hardcoded only for testing
-        stats = await StatsService.GetMonthlyStatsAsync(userCode);
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		string userCode = "BvREsI"; // Hardcoded only for testing
+		dailyMoods = await StatsService.GetDailyMoodCurrentMonthAsync(userCode);
+		stats = await StatsService.GetMonthlyStatsAsync(userCode);
+	}
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && stats.Any())
-        {
-            var labels = stats.Select(s => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(s.MonthId)).ToArray();
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender && stats.Any())
+		{
+			var labelsDailyMood = dailyMoods.Select(d => d.Day.ToString()).ToArray();
+			var valuesDailyMood = dailyMoods.Select(d => d.AverageMood).ToArray();
+			await JS.InvokeVoidAsync("renderLineChart", labelsDailyMood, valuesDailyMood);
 
-            var values = stats.Select(s => s.CountOfRecords).ToArray();
+			var labels = stats.Select(s => System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(s.MonthId)).ToArray();
+			var values = stats.Select(s => s.CountOfRecords).ToArray();
+			await JS.InvokeVoidAsync("renderChart", labels, values);
 
-            await JS.InvokeVoidAsync("renderChart", labels, values);
-        }
-    }
+		}
+	}
 }

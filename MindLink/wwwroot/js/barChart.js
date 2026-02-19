@@ -1,5 +1,5 @@
 ﻿window.renderChart = (labels, values) => {
-    const ctx = document.getElementById('myChart');
+    const ctx = document.getElementById('barChart');
 
     if (window.myChartInstance) {
         window.myChartInstance.destroy();

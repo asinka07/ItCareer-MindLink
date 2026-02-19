@@ -4,5 +4,6 @@
     {
         public int MonthId { get; set; }
         public int CountOfRecords { get; set; }
+
     }
 }

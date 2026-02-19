@@ -42,5 +42,34 @@ namespace MindLink.Data.Services
 
             return result;
         }
+
+        public async Task<List<DailyMood>> GetDailyMoodCurrentMonthAsync(string userCode)
+        {
+            var now = DateTime.Now;
+            int daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
+
+            var data = await _context.Records
+                .Where(r => r.UserCode == userCode && r.RecordDate.Year == now.Year && r.RecordDate.Month == now.Month)
+                .GroupBy(r => r.RecordDate.Day)
+                .Select(g => new DailyMood
+                {
+                    Day = g.Key,
+                    AverageMood = g.Average(r => r.Rate) 
+                })
+                .ToListAsync();
+
+            var result = new List<DailyMood>();
+            for (int day = 1; day <= daysInMonth; day++)
+            {
+                var existing = data.FirstOrDefault(x => x.Day == day);
+                result.Add(new DailyMood
+                {
+                    Day = day,
+                    AverageMood = existing?.AverageMood ?? 0
+                });
+            }
+
+            return result;
+        }
     }
 }
