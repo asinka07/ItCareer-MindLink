@@ -220,6 +220,9 @@
     {
 		await _logsService.CreateLog(user, "Успешно изтриване на акаунт");
         await _usersService.DeleteUser(user);
+
+		Session.LogOut();
+
         Nav.NavigateTo("/login");
     }
 }

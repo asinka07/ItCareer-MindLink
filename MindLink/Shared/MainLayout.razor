@@ -1,4 +1,5 @@
 @using MindLink.Data.Services
+@inject AuthenticationStateProvider AuthStateProvider
 @inherits LayoutComponentBase
 @inject NavigationManager NavManager
 @inject UserSessionService Session
@@ -7,6 +8,7 @@
 
 
 <PageTitle>MindLink</PageTitle>
+
 
 <div class="page">
 	@if (!IsLoginOrHomePage)
@@ -64,9 +66,15 @@ private void GoToProfile()
 	NavManager.NavigateTo("/myprofile");
 }
 
-private void Logout()
-{
-	isDropdownOpen = false;
-	NavManager.NavigateTo("/login");
-}
+	private void Logout()
+	{
+		Session.LogOut();
+
+		if (AuthStateProvider is CustomAuthStateProvider customAuth)
+		{
+			customAuth.NotifyUserChanged();
+		}
+
+		NavManager.NavigateTo("/login");
+	}
 }

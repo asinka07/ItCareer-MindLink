@@ -1,4 +1,5 @@
 @page "/login"
+@inject AuthenticationStateProvider AuthStateProvider
 @inject UserSessionService Session
 @inject NavigationManager Nav
 @inject MindLink.Data.MindLinkDbContext DbContext
@@ -109,28 +110,29 @@
         FindUser();
 
 
-        if (ValidUser() && user.RoleId == 1)
+        if (ValidUser())
         {
             Session.LogIn(user);
-            user.LastLogin = DateTime.Now;
-            await _usersService.LogUser(user);
-            await _logsService.CreateLog(user, "Успешен вход");
-            Nav.NavigateTo("/homepage");
+        
+            if (AuthStateProvider is CustomAuthStateProvider customAuth)
+            {
+                customAuth.NotifyUserChanged();
+            }
 
-        }
-        else if (ValidUser() && user.RoleId == 2)
-        {
-            Session.LogIn(user);
             user.LastLogin = DateTime.Now;
             await _usersService.LogUser(user);
             await _logsService.CreateLog(user, "Успешен вход");
-            Nav.NavigateTo("/admin-panel");
+
+            if (user.RoleId == 1)
+                Nav.NavigateTo("/homepage");
+            else if (user.RoleId == 2)
+                Nav.NavigateTo("/admin-panel");
         }
         else
         {
-            user = allUsers.Where(s => s.UserCode == "111111").Single();
-            await _logsService.CreateLog(user, "Неуспешен вход");
-            return;
+            var defaultUser = allUsers.FirstOrDefault(s => s.UserCode == "111111");
+            if (defaultUser != null)
+                await _logsService.CreateLog(defaultUser, "Неуспешен вход");
         }
     }
 

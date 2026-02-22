@@ -1,4 +1,5 @@
 ﻿@page "/users-logs"
+@attribute [Authorize(Roles = "Admin")]
 @using MindLink.Data.Models
 @using MindLink.Data.Services
 @inject MindLink.Data.MindLinkDbContext DbContext

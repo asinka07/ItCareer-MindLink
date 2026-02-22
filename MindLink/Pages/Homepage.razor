@@ -1,4 +1,5 @@
 ﻿@page "/homepage"
+@attribute [Authorize(Roles = "User")]
 @using MindLink.Data.Models
 @using MindLink.Data.Services
 @inject UserSessionService Session
