@@ -1,29 +1,55 @@
-﻿window.renderChart = (labels, values) => {
-    const ctx = document.getElementById('barChart');
+﻿window.updateBarChart = (labels, values, xLabel) => {
+    if (!window.myBarChartInstance) return;
 
-    if (window.myChartInstance) {
-        window.myChartInstance.destroy();
+    window.myBarChartInstance.data.labels = labels;
+    window.myBarChartInstance.data.datasets[0].data = values;
+
+    if (window.myBarChartInstance.options.scales?.x?.title) {
+        window.myBarChartInstance.options.scales.x.title.text = xLabel;
     }
 
-    const barColors = ["#decffc"];
-    const colors = values.map((v, i) => barColors[i % barColors.length]);
+    window.myBarChartInstance.update();
+};
 
-    window.myChartInstance = new Chart(ctx, {
-        type: "bar",
+window.renderBarChart = (labels, values) => {
+
+    const ctx = document.getElementById('barChart');
+
+    if (window.myBarChartInstance) {
+        window.myBarChartInstance.destroy();
+    }
+
+    window.myBarChartInstance = new Chart(ctx, {
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
-                backgroundColor: colors,
-                data: values
+                label: "Брой записи",
+                data: values,
+                backgroundColor: "#decffc",
+                borderRadius: 6
             }]
         },
         options: {
+            responsive: true,
             plugins: {
-                legend: { display: false },
                 title: {
                     display: true,
-                    text: "Брой записи",
+                    text: 'Брой записи',
                     font: { size: 28 }
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: { display: true, text: "Ден от седмицата" }
+                },
+                y: {
+                    beginAtZero: true,
+                    display: true,
+                    title: { display: true, text: "Брой записи" },
+                    ticks: { stepSize: 1 }
                 }
             }
         }

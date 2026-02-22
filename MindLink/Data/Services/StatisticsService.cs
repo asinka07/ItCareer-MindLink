@@ -15,75 +15,45 @@ namespace MindLink.Data.Services
             _context = context;
         }
 
-        public async Task<List<MonthlyStatistics>> GetMonthlyStatsAsync(string userCode)
+        public async Task<Record?> GetFirstRecordDateAsync(string userCode)
+        {
+            return await _context.Records.Where(r => r.UserCode == userCode).OrderBy(r => r.RecordDate).FirstOrDefaultAsync();
+        }
+
+        public async Task<Record?> GetLastRecordDateAsync(string userCode)
+        {
+            return await _context.Records.Where(r => r.UserCode == userCode).OrderByDescending(r => r.RecordDate).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<BarChartStatistic>> GetMonthlyStatsAsync(string userCode)
         {
             var data = await _context.Records
                 .Where(r => r.UserCode == userCode)
                 .Where(r => r.RecordDate.Year == DateTime.Now.Year)
                 .GroupBy(r => r.RecordDate.Month)
                 .OrderBy(g => g.Key)
-                .Select(g => new MonthlyStatistics
+                .Select(g => new BarChartStatistic
                 {
-                    MonthId = g.Key,
+                    DayOrMonth = g.Key,
                     CountOfRecords = g.Count()
                 })
                 .ToListAsync();
 
-            var result = new List<MonthlyStatistics>();
+            var result = new List<BarChartStatistic>();
 
             for (int month = 1; month <= 12; month++)
             {
-                var existing = data.FirstOrDefault(x => x.MonthId == month);
+                var existing = data.FirstOrDefault(x => x.DayOrMonth == month);
 
-                result.Add(new MonthlyStatistics
+                result.Add(new BarChartStatistic
                 {
-                    MonthId = month,
+                    DayOrMonth = month,
                     CountOfRecords = existing?.CountOfRecords ?? 0
                 });
             }
 
             return result;
         }
-
-        //public async Task<List<LineChartStatistic>> GetDailyMoodCurrentMonthAsync(string userCode)
-        //{
-        //    var now = DateTime.Now;
-        //    int daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
-
-        //    var data = await _context.Records
-        //        .Where(r => r.UserCode == userCode && r.RecordDate.Year == now.Year && r.RecordDate.Month == now.Month)
-        //        .GroupBy(r => r.RecordDate.Day)
-        //        .Select(g => new LineChartStatistic
-        //        {
-        //            DayOrMonth = g.Key,
-        //            AverageMood = g.Average(r => r.Rate)
-        //        })
-        //        .ToListAsync();
-
-        //    var result = new List<LineChartStatistic>();
-        //    for (int day = 1; day <= daysInMonth; day++)
-        //    {
-        //        var existing = data.FirstOrDefault(x => x.DayOrMonth == day);
-        //        if (day > data.Max(d => d.DayOrMonth))
-        //        {
-        //            result.Add(new LineChartStatistic
-        //            {
-        //                DayOrMonth = day,
-        //                AverageMood = existing?.AverageMood ?? null
-        //            });
-        //        }
-        //        else
-        //        {
-        //            result.Add(new LineChartStatistic
-        //            {
-        //                DayOrMonth = day,
-        //                AverageMood = existing?.AverageMood ?? data.Where(d => d.DayOrMonth <= day).Average(d => d.AverageMood)
-        //            });
-        //        }
-        //    }
-
-        //    return result;
-        //}
 
         public async Task<int[]> GetMonthlyMoodCountsAsync(string userCode)
         {
@@ -102,31 +72,12 @@ namespace MindLink.Data.Services
 
 
 
-        public async Task<List<LineChartStatistic>> GetMoodTrendAsync(string userCode, StatisticPeriod period)
+        public async Task<List<LineChartStatistic>> GetMoodTrendAsync(string userCode, StatisticPeriod period, DateTime start, DateTime end)
         {
             var now = DateTime.Now;
-            DateTime from, to;
 
-            switch (period)
-            {
-                case StatisticPeriod.Week:
-                    int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
-                    from = now.AddDays(-diff).Date;
-                    to = from.AddDays(6);
-                    break;
-                case StatisticPeriod.Month:
-                    from = new DateTime(now.Year, now.Month, 1);
-                    to = from.AddMonths(1).AddDays(-1);
-                    break;
-                case StatisticPeriod.Year:
-                    from = new DateTime(now.Year, 1, 1);
-                    to = new DateTime(now.Year, 12, 31);
-                    break;
-                default:
-                    from = now.AddDays(-7);
-                    to = now;
-                    break;
-            }
+            DateTime from = start.Date;
+            DateTime to = end.Date;
 
             var dataQuery = _context.Records
                 .Where(r => r.UserCode == userCode && r.RecordDate.Date >= from && r.RecordDate.Date <= to);
@@ -147,31 +98,20 @@ namespace MindLink.Data.Services
                 for (int month = 1; month <= 12; month++)
                 {
                     var existing = data.FirstOrDefault(d => d.DayOrMonth == month);
-                    if (month > data.Max(d => d.DayOrMonth))
-                    {
+
                         result.Add(new LineChartStatistic
                         {
                             DayOrMonth = month,
                             AverageMood = existing?.AverageMood ?? null,
                             Label = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month)
                         });
-                    }
-                    else
-                    {
-                        result.Add(new LineChartStatistic
-                        {
-                            DayOrMonth = month,
-                            AverageMood = existing?.AverageMood ?? data.Where(d => d.DayOrMonth <= month && d.DayOrMonth >= 1).Average(d => d.AverageMood),
-                            Label = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month)
-                        });
-                    }
+
                 }
                 return result;
             }
-            else if(period == StatisticPeriod.Month)
+            else if (period == StatisticPeriod.Month)
             {
-                from = new DateTime(now.Year, now.Month, 1);
-                to = from.AddMonths(1).AddDays(-1);
+                int totalDays = DateTime.DaysInMonth(from.Year, from.Month);
 
                 data = await dataQuery
                     .GroupBy(r => r.RecordDate.Day)
@@ -181,7 +121,6 @@ namespace MindLink.Data.Services
                         AverageMood = g.Average(r => r.Rate)
                     }).ToListAsync();
 
-                int totalDays = DateTime.DaysInMonth(now.Year, now.Month);
                 var result = new List<LineChartStatistic>();
                 for (int i = 0; i < totalDays; i++)
                 {
@@ -190,7 +129,7 @@ namespace MindLink.Data.Services
                     result.Add(new LineChartStatistic
                     {
                         DayOrMonth = date.Day,
-                        AverageMood = existing?.AverageMood ?? data.Where(d => d.DayOrMonth <= date.Day).Average(d => d.AverageMood),
+                        AverageMood = existing?.AverageMood ?? null,
                         Label = date.Day.ToString()
                     });
                 }
@@ -220,7 +159,7 @@ namespace MindLink.Data.Services
                     result.Add(new LineChartStatistic
                     {
                         DayOrMonth = date.Day,
-                        AverageMood = existing?.AverageMood ?? data.Where(d => d.DayOrMonth <= date.Day).Average(d => d.AverageMood),
+                        AverageMood = existing?.AverageMood ?? null,
                         Label = date.ToString("ddd", CultureInfo.CurrentCulture)
                     });
                 }
@@ -228,6 +167,100 @@ namespace MindLink.Data.Services
                 return result;
             }
 
+        }
+
+        public async Task<List<BarChartStatistic>> GetActivityStatsAsync(string userCode, StatisticPeriod period, DateTime start, DateTime end)
+        {
+            DateTime from = start.Date;
+            DateTime to = end.Date;
+
+            var dataQuery = _context.Records
+                .Where(r => r.UserCode == userCode && r.RecordDate.Date >= from && r.RecordDate.Date <= to);
+
+            List<BarChartStatistic> data;
+
+            if (period == StatisticPeriod.Year)
+            {
+                // Групиране по месец
+                data = await dataQuery
+                    .GroupBy(r => r.RecordDate.Month)
+                    .Select(g => new BarChartStatistic
+                    {
+                        DayOrMonth = g.Key,
+                        CountOfRecords = g.Count() 
+                    })
+                    .ToListAsync();
+
+                var result = new List<BarChartStatistic>();
+                for (int month = 1; month <= 12; month++)
+                {
+                    var existing = data.FirstOrDefault(d => d.DayOrMonth == month);
+                    result.Add(new BarChartStatistic
+                    {
+                        DayOrMonth = month,
+                        CountOfRecords = existing?.CountOfRecords ?? 0,
+                        Label = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month)
+                    });
+                }
+                return result;
+            }
+            else if (period == StatisticPeriod.Month)
+            {
+                int totalDays = DateTime.DaysInMonth(from.Year, from.Month);
+
+                data = await dataQuery
+                    .GroupBy(r => r.RecordDate.Day)
+                    .Select(g => new BarChartStatistic
+                    {
+                        DayOrMonth = g.Key,
+                        CountOfRecords = g.Count()
+                    })
+                    .ToListAsync();
+
+                var result = new List<BarChartStatistic>();
+                for (int i = 0; i < totalDays; i++)
+                {
+                    var date = from.AddDays(i);
+                    var existing = data.FirstOrDefault(d => d.DayOrMonth == date.Day);
+                    result.Add(new BarChartStatistic
+                    {
+                        DayOrMonth = date.Day,
+                        CountOfRecords = existing?.CountOfRecords ?? 0,
+                        Label = date.Day.ToString()
+                    });
+                }
+                return result;
+            }
+            else
+            {
+                // Групиране по ден от седмицата (Week)
+                data = await dataQuery
+                    .GroupBy(r => r.RecordDate.Date)
+                    .Select(g => new BarChartStatistic
+                    {
+                        DayOrMonth = g.Key.Day,
+                        CountOfRecords = g.Count(),
+                        Label = g.Key.ToString("ddd", CultureInfo.CurrentCulture)
+                    })
+                    .ToListAsync();
+
+                int totalDays = (int)(to - from).TotalDays + 1;
+                var result = new List<BarChartStatistic>();
+
+                for (int i = 0; i < totalDays; i++)
+                {
+                    var date = from.AddDays(i);
+                    var existing = data.FirstOrDefault(d => d.DayOrMonth == date.Day);
+                    result.Add(new BarChartStatistic
+                    {
+                        DayOrMonth = date.Day,
+                        CountOfRecords = existing?.CountOfRecords ?? 0,
+                        Label = date.ToString("ddd", CultureInfo.CurrentCulture)
+                    });
+                }
+
+                return result;
+            }
         }
 
     }

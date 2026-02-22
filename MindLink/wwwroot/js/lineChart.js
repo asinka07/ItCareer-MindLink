@@ -4,7 +4,9 @@
     window.myLineChartInstance.data.labels = labels;
     window.myLineChartInstance.data.datasets[0].data = values;
 
-    window.myLineChartInstance.options.scales.x.title.text = xLabel;
+    if (window.myLineChartInstance.options.scales.x.title) {
+        window.myLineChartInstance.options.scales.x.title.text = xLabel;
+    }
 
     window.myLineChartInstance.update();
 };
@@ -27,11 +29,15 @@ window.renderLineChart = (labels, values) => {
                 borderColor: "#8bc9c9",
                 backgroundColor: "rgba(189, 255, 254,0.2)",
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                spanGaps: false,
+                pointRadius: 6,
+                pointHoverRadius: 8   
             }]
         },
         options: {
             responsive: true,
+            clip: false,
             plugins: {
                 title: {
                     display: true,
@@ -43,14 +49,14 @@ window.renderLineChart = (labels, values) => {
             scales: {
                 x: {
                     display: true,
-                    title: { display: true, text: "Ден от месеца" }
+                    title: { display: true, text: "Ден от седмицата" }
                 },
                 y: {
                     beginAtZero: true,
-                    min: 5,
-                    max: 1,
+                    min: 1,
+                    max: 3,
                     display: true,
-                    title: { display: true, text: "Настроение (1-5)" },
+                    title: { display: true, text: "Настроение (1-3)" },
                     ticks: { stepSize: 1 }
                 }
             }
