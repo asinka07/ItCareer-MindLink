@@ -2,9 +2,11 @@
 @using MindLink.Data.Models
 @using MindLink.Data.Services
 @inject UserSessionService Session
+@inject SentimentService SentimentSvc
 @inject NavigationManager Nav
 @inject MindLink.Data.MindLinkDbContext DbContext
-<link href="/css/Homepage.css" rel="stylesheet" />
+<link href="css/Homepage.css" rel="stylesheet" />
+<link href="css/admin.css" rel="stylesheet" />
 
 <PageTitle>MindLink - Начало</PageTitle>
 
@@ -18,7 +20,7 @@
 </h1>
 <p class="page-subtitle">
 
-	Тук можеш да напишеш всичко. Без осъждане. Без бързане.
+	Тук можеш да напишеш всичко. Без осъждане. Без бързане. AI ще оцени твоето настроение.
 </p>
 <div style="display: flex; flex-direction: column;">
 	@if (!HasRecord)
@@ -53,7 +55,7 @@
 
 
 		<div class="card-actions">
-			<button class="btn saveNote" @onclick="Save">Запази</button>
+			<button class="btn saveNote" @onclick="BeforeSave">Запази</button>
 			<button class="btn clearText" @onclick="Clear">Изчисти</button>
 		</div>
 	</div>
@@ -89,46 +91,93 @@
 
 	</div>
 </div>
+@if (!isTrue)
+{
+	<div class="modal-overlay">
+		<div class="delete-panel">
+			<h3>Оценка на AI</h3>
+			<p>Точна ли е оценката: <strong>@sentiment</strong>?</p>
 
+			<p>Промяна:</p>
+
+			<select class="form-select" @bind="@record.Sentiment">
+				<option value="positive">Положителна</option>
+				<option value="neutral">Неутрална</option>
+				<option value="negative">Отрицателна</option>
+			</select>
+
+			<div class="edit-actions mt-3">
+				<button class="btn saveNote" @onclick="Save">Продължи</button>
+			</div>
+		</div>
+	</div>
+}
 
 @code {
 	RecordsService _recordsService = null!;
 	Record record = new Record();
 
-	public bool HasRecord; // need to check db
+	public bool HasRecord;
+	public bool isTrue = true;
+
+	private string sentiment = string.Empty;
 
 	protected override async Task OnInitializedAsync()
-{
-    if (!Session.IsLoggedIn)
-    {
-        Nav.NavigateTo("/login");
-        return;
-    }
+	{
+		if (!Session.IsLoggedIn)
+		{
+			Nav.NavigateTo("/login");
+			return;
+		}
 
-    _recordsService = new RecordsService(DbContext);
-    var items = await _recordsService.GetAllRecordsByUser(Session?.CurrentUser?.UserCode!);
+		_recordsService = new RecordsService(DbContext);
+		var items = await _recordsService.GetAllRecordsByUser(Session?.CurrentUser?.UserCode!);
 
-    HasRecord = items.Any(x => x.RecordDate.Date == DateTime.Now.Date);
+		HasRecord = items.Any(x => x.RecordDate.Date == DateTime.Now.Date);
 
-}
+	}
 
+	private async Task BeforeSave()
+	{
+		var textToAnalyze = record.RecordText;
 
-private async Task Save()
-{
-    record.UserCode = Session?.CurrentUser?.UserCode!;
-    record.Rate = 1;
+		if (string.IsNullOrWhiteSpace(textToAnalyze))
+			return;
 
-    await _recordsService.CreateRecord(record); 
+		record.UserCode = Session?.CurrentUser?.UserCode!;
+		record.RecordText = textToAnalyze;
+		record.Sentiment = await SentimentSvc.AnalyzeAsync(textToAnalyze);
+		if (record.Sentiment == "positive")
+		{
+			sentiment = "положителна";
+			record.Rate = 3;
+		}
+		else if (record.Sentiment == "negative")
+		{
+			sentiment = "отрицателна";
+			record.Rate = 2;
+		}
+		else
+		{
+			sentiment = "неутрална";
+			record.Rate = 1;
+		}
+		isTrue = false;
+		StateHasChanged();
+	}
 
-    HasRecord = true;
-    record = new Record();
-    StateHasChanged();
-}
+	public async void Save()
+	{
+		await _recordsService.CreateRecord(record);
+		isTrue = true;
+		HasRecord = true;
+		record = new Record();
+		StateHasChanged();
+	}
 
-private void Clear()
-{
-   record = new Record();
-   StateHasChanged();
-}
-
+	private void Clear()
+	{
+		record = new Record();
+		StateHasChanged();
+	}
 }

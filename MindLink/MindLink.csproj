@@ -21,6 +21,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MudBlazor" Version="8.15.0" />
+    <PackageReference Include="VaderSharp2" Version="3.3.2.1" />
   </ItemGroup>
 
   <ItemGroup>

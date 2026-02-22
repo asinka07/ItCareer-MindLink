@@ -15,7 +15,7 @@ builder.Services.AddDbContext<MindLinkDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddSingleton<UserSessionService>();
 builder.Services.AddMudServices();
-
+builder.Services.AddHttpClient<SentimentService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
