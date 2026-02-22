@@ -25,47 +25,21 @@ namespace MindLink.Data.Services
             return await _context.Records.Where(r => r.UserCode == userCode).OrderByDescending(r => r.RecordDate).FirstOrDefaultAsync();
         }
 
-        public async Task<List<BarChartStatistic>> GetMonthlyStatsAsync(string userCode)
-        {
-            var data = await _context.Records
-                .Where(r => r.UserCode == userCode)
-                .Where(r => r.RecordDate.Year == DateTime.Now.Year)
-                .GroupBy(r => r.RecordDate.Month)
-                .OrderBy(g => g.Key)
-                .Select(g => new BarChartStatistic
-                {
-                    DayOrMonth = g.Key,
-                    CountOfRecords = g.Count()
-                })
-                .ToListAsync();
 
-            var result = new List<BarChartStatistic>();
-
-            for (int month = 1; month <= 12; month++)
-            {
-                var existing = data.FirstOrDefault(x => x.DayOrMonth == month);
-
-                result.Add(new BarChartStatistic
-                {
-                    DayOrMonth = month,
-                    CountOfRecords = existing?.CountOfRecords ?? 0
-                });
-            }
-
-            return result;
-        }
-
-        public async Task<int[]> GetMonthlyMoodCountsAsync(string userCode)
+        public async Task<int[]> GetMonthlyMoodCountsAsync(string userCode, StatisticPeriod period, DateTime start, DateTime end)
         {
             var now = DateTime.Now;
 
+            DateTime from = start.Date;
+            DateTime to = end.Date;
+
             var records = await _context.Records
-                .Where(r => r.UserCode == userCode && r.RecordDate.Year == now.Year && r.RecordDate.Month == now.Month)
+                .Where(r => r.UserCode == userCode && r.RecordDate.Date >= from && r.RecordDate.Date <= to)
                 .ToListAsync();
 
-            int happyCount = records.Count(r => r.Sentiment == "happy");
+            int happyCount = records.Count(r => r.Sentiment == "positive");
             int neutralCount = records.Count(r => r.Sentiment == "neutral");
-            int sadCount = records.Count(r => r.Sentiment == "sad");
+            int sadCount = records.Count(r => r.Sentiment == "negative");
 
             return new int[] { sadCount, neutralCount, happyCount };
         }

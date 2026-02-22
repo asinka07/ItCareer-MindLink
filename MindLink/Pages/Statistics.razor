@@ -7,427 +7,268 @@
 @using MindLink.Data.ViewModels
 @using MindLink.Data.Services
 @using MindLink.Data.Enums
+@using MindLink.Data.Helpers
 @using System.Globalization
 <link href="css/site.css" rel="stylesheet" />
 <link href="css/statistics.css" rel="stylesheet" />
 
 <PageTitle>MindLink - Статистики</PageTitle>
 
-<div style="display: flex; flex-direction: row; width: 80vw; height: fit-content; margin-bottom: 30px;">
-	<div style="display: flex; flex-direction: column; width: 50%; height: 100%;">
+@if (moodNavigator != null && activityNavigator != null)
+{
+    <div style="display: flex; flex-direction: row; width: 80vw; height: fit-content; margin-bottom: 30px;">
+        <div style="display: flex; flex-direction: column; width: 50%; height: 100%;">
 
-		<!-- Line chart -->
-		<div class="period-switcher" style="align-self: center;">
-			<button class="period-button @(moodTrendPeriod == StatisticPeriod.Week ? "selected" : "")"
-					@onclick="() => ChangeMoodTrendPeriod(StatisticPeriod.Week)">
-				Седмица
-			</button>
-			<button class="period-button @(moodTrendPeriod == StatisticPeriod.Month ? "selected" : "")"
-					@onclick="() => ChangeMoodTrendPeriod(StatisticPeriod.Month)">
-				Месец
-			</button>
-			<button class="period-button @(moodTrendPeriod == StatisticPeriod.Year ? "selected" : "")"
-					@onclick="() => ChangeMoodTrendPeriod(StatisticPeriod.Year)">
-				Година
-			</button>
-		</div>
-		<div class="period-controls">
-			<button @onclick="PrevPeriod" disabled="@IsPrevDisabled">&#11207;</button>
-			<span style="margin-top: 5px;">@GetPeriodLabel()</span>
-			<button @onclick="NextPeriod" disabled="@IsNextDisabled">&#11208;</button>
-			<button class="todayButton" @onclick="GoToToday">&#11150; Днес</button>
-		</div>
-		<canvas id="lineChart" style="flex: 1; width: 100%;"></canvas>
+            <!-- Line chart -->
+            <div class="period-switcher" style="align-self: center;">
+                <button class="period-button @(moodNavigator.Period == StatisticPeriod.Week ? "selected" : "")"
+                        @onclick="() => ChangeMoodTrendPeriod(StatisticPeriod.Week)">
+                    Седмица
+                </button>
+                <button class="period-button @(moodNavigator.Period == StatisticPeriod.Month ? "selected" : "")"
+                        @onclick="() => ChangeMoodTrendPeriod(StatisticPeriod.Month)">
+                    Месец
+                </button>
+                <button class="period-button @(moodNavigator.Period == StatisticPeriod.Year ? "selected" : "")"
+                        @onclick="() => ChangeMoodTrendPeriod(StatisticPeriod.Year)">
+                    Година
+                </button>
+            </div>
+            <div class="period-controls">
+                <button @onclick="PrevPeriod" disabled="@moodNavigator.IsPrevDisabled">&#11207;</button>
+                <span style="margin-top: 5px;">@moodNavigator.GetLabel()</span>
+                <button @onclick="NextPeriod" disabled="@moodNavigator.IsNextDisabled">&#11208;</button>
+                <button class="todayButton" @onclick="GoToToday">&#11150; Днес</button>
+            </div>
+            <canvas id="lineChart" style="flex: 1; width: 100%;"></canvas>
 
-		<hr style="border: 1px dashed gray; background: none;">
+            <hr style="border: 1px dashed gray; background: none;">
 
-		<!-- Bar chart -->
-		<div class="period-switcher-bar-chart" style="align-self: center;">
-			<button class="period-button-bar-chart @(activityPeriod == StatisticPeriod.Week ? "selected" : "")"
-					@onclick="() => ChangeActivityPeriod(StatisticPeriod.Week)">
-				Седмица
-			</button>
-			<button class="period-button-bar-chart @(activityPeriod == StatisticPeriod.Month ? "selected" : "")"
-					@onclick="() => ChangeActivityPeriod(StatisticPeriod.Month)">
-				Месец
-			</button>
-			<button class="period-button-bar-chart @(activityPeriod == StatisticPeriod.Year ? "selected" : "")"
-					@onclick="() => ChangeActivityPeriod(StatisticPeriod.Year)">
-				Година
-			</button>
-		</div>
-		<div class="period-controls">
-			<button @onclick="PrevActivityPeriod" disabled="@IsPrevActivityDisabled">&#11207;</button>
-			<span style="margin-top: 5px;">@GetPeriodLabelActivity()</span>
-			<button @onclick="NextActivityPeriod" disabled="@IsNextActivityDisabled">&#11208;</button>
-			<button class="todayButton-bar-chart" @onclick="GoToTodayActivity">&#11150; Днес</button>
-		</div>
-		<canvas id="barChart" style="flex: 1; width: 100%;"></canvas>
-	</div>
+            <!-- Bar chart -->
+            <div class="period-switcher-bar-chart" style="align-self: center;">
+                <button class="period-button-bar-chart @(activityNavigator.Period == StatisticPeriod.Week ? "selected" : "")"
+                        @onclick="() => ChangeActivityPeriod(StatisticPeriod.Week)">
+                    Седмица
+                </button>
+                <button class="period-button-bar-chart @(activityNavigator.Period == StatisticPeriod.Month ? "selected" : "")"
+                        @onclick="() => ChangeActivityPeriod(StatisticPeriod.Month)">
+                    Месец
+                </button>
+                <button class="period-button-bar-chart @(activityNavigator.Period == StatisticPeriod.Year ? "selected" : "")"
+                        @onclick="() => ChangeActivityPeriod(StatisticPeriod.Year)">
+                    Година
+                </button>
+            </div>
+            <div class="period-controls">
+                <button @onclick="PrevActivityPeriod" disabled="@activityNavigator.IsPrevDisabled">&#11207;</button>
+                <span style="margin-top: 5px;">@activityNavigator.GetLabel()</span>
+                <button @onclick="NextActivityPeriod" disabled="@activityNavigator.IsNextDisabled">&#11208;</button>
+                <button class="todayButton-bar-chart" @onclick="GoToTodayActivity">&#11150; Днес</button>
+            </div>
+            <canvas id="barChart" style="flex: 1; width: 100%;"></canvas>
+        </div>
 
-	<!-- Dougnut chart -->
-	<div style="flex: 1; display: flex; justify-content: center; align-items: center; height: 100%;">
-		<canvas id="doughnutChart" style="width: 80%; height: 80%;"></canvas>
-	</div>
-</div>
 
+        <!-- Doughnut chart -->
+      <hr style="background: none; border: 1px dashed gray; height: 100dvh; margin-left: 30px; margin-right: -15px;">
+
+        <div style="flex: 1; display: flex; justify-content: center; align-items: center; height: 100%; flex-direction: column;">
+            <div class="period-switcher-doughnut-chart" style="align-self: center;">
+                <button class="period-button-doughnut-chart @(countNavigator.Period == StatisticPeriod.Week ? "selected" : "")"
+                        @onclick="() => ChangeMoodCountsPeriod(StatisticPeriod.Week)">
+                    Седмица
+                </button>
+                <button class="period-button-doughnut-chart @(countNavigator.Period == StatisticPeriod.Month ? "selected" : "")"
+                        @onclick="() => ChangeMoodCountsPeriod(StatisticPeriod.Month)">
+                    Месец
+                </button>
+                <button class="period-button-doughnut-chart @(countNavigator.Period == StatisticPeriod.Year ? "selected" : "")"
+                        @onclick="() => ChangeMoodCountsPeriod(StatisticPeriod.Year)">
+                    Година
+                </button>
+            </div>
+            <div class="period-controls">
+                <button @onclick="PrevMoodCountsPeriod" disabled="@countNavigator.IsPrevDisabled">&#11207;</button>
+                <span style="margin-top: 5px;">@countNavigator.GetLabel()</span>
+                <button @onclick="NextMoodCountsPeriod" disabled="@countNavigator.IsNextDisabled">&#11208;</button>
+                <button class="todayButton-doughnut-chart" @onclick="GoToTodayMoodCounts">&#11150; Днес</button>
+            </div>
+            <canvas id="doughnutChart" style="width: 80%; height: 80%;"></canvas>
+        </div>
+    </div>
+}
+else
+{
+    <p>Зареждане на статистики...</p>
+}
 
 @code {
-	// Line Chart 
-	private List<LineChartStatistic> dailyMoods = new();
-	private StatisticPeriod moodTrendPeriod = StatisticPeriod.Week;
-	private DateTime currentStart;
-	private DateTime currentEnd;
-	private DateTime minDate;
-	private DateTime maxDate;
-	private bool IsPrevDisabled => currentStart <= minDate;
-	private bool IsNextDisabled => currentEnd >= maxDate;
-
-	// Bar Chart (Activity)
-	private List<BarChartStatistic> recordCounts = new();
-	private StatisticPeriod activityPeriod = StatisticPeriod.Week;
-	private DateTime activityStart;
-	private DateTime activityEnd;
-	private DateTime activityMinDate;
-	private DateTime activityMaxDate;
-	private bool IsPrevActivityDisabled => activityStart <= activityMinDate;
-	private bool IsNextActivityDisabled => activityEnd >= activityMaxDate;
-
-	// Doughnut Chart (Mood counts)
-	private int[] moodCounts = new int[3];
-	private StatisticPeriod distributionPeriod = StatisticPeriod.Month;
+    private PeriodNavigator moodNavigator;
+    private PeriodNavigator activityNavigator;
+    private PeriodNavigator countNavigator;
 
 
+    private List<LineChartStatistic> dailyMoods = new();
+    private List<BarChartStatistic> recordCounts = new();
+    private int[] moodCounts = new int[3];
 
-	// ======================
-	// Initialization
-	// ======================
+    protected override async Task OnInitializedAsync()
+    {
+        string userCode = Session.CurrentUser.UserCode;
 
-	protected override async Task OnInitializedAsync()
-	{
-		string userCode = Session.CurrentUser.UserCode;
+        var firstRecord = await StatsService.GetFirstRecordDateAsync(userCode);
+        var lastRecord = await StatsService.GetLastRecordDateAsync(userCode);
 
-		var firstRecord = await StatsService.GetFirstRecordDateAsync(userCode);
-		var lastRecord = await StatsService.GetLastRecordDateAsync(userCode);
+        DateTime minDate = (firstRecord?.RecordDate ?? DateTime.Now).Date;
+        DateTime maxDate = (lastRecord?.RecordDate ?? DateTime.Now).Date;
 
-		minDate = (firstRecord?.RecordDate ?? DateTime.Now).Date;
-		maxDate = (lastRecord?.RecordDate ?? DateTime.Now).Date;
+        moodNavigator = new PeriodNavigator(StatisticPeriod.Week, minDate, maxDate);
+        activityNavigator = new PeriodNavigator(StatisticPeriod.Week, minDate, maxDate);
+        countNavigator = new PeriodNavigator(StatisticPeriod.Month, minDate, maxDate);
 
-		activityMinDate = (firstRecord?.RecordDate ?? DateTime.Now).Date;
-		activityMaxDate = (lastRecord?.RecordDate ?? DateTime.Now).Date;
+        dailyMoods = await StatsService.GetMoodTrendAsync(userCode, moodNavigator.Period, moodNavigator.Start, moodNavigator.End);
+        recordCounts = await StatsService.GetActivityStatsAsync(userCode, activityNavigator.Period, activityNavigator.Start, activityNavigator.End);
+        moodCounts = await StatsService.GetMonthlyMoodCountsAsync(userCode, countNavigator.Period, countNavigator.Start, countNavigator.End);
+    }
 
-		SetCurrentPeriodToToday();
-		SetActivityPeriodToToday();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
 
-		dailyMoods = await StatsService.GetMoodTrendAsync(userCode, moodTrendPeriod, currentStart, currentEnd);
-		recordCounts = await StatsService.GetActivityStatsAsync(userCode, activityPeriod, activityStart, activityEnd);
-		moodCounts = await StatsService.GetMonthlyMoodCountsAsync(userCode);
-	}
+        await Task.Delay(200);
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (!firstRender) return;
+        var labelsDailyMood = dailyMoods.Select(d => d.Label ?? d.DayOrMonth.ToString()).ToArray();
+        var valuesDailyMood = dailyMoods.Select(d => d.AverageMood).ToArray();
+        await JS.InvokeVoidAsync("renderLineChart", labelsDailyMood, valuesDailyMood);
 
-		await Task.Delay(200); 
+        var labelsActivity = recordCounts.Select(s => s.Label).ToArray();
+        var valuesActivity = recordCounts.Select(s => s.CountOfRecords).ToArray();
+        await JS.InvokeVoidAsync("renderBarChart", labelsActivity, valuesActivity);
 
-		var labelsDailyMood = dailyMoods.Select(d => d.Label ?? d.DayOrMonth.ToString()).ToArray();
-		var valuesDailyMood = dailyMoods.Select(d => d.AverageMood).ToArray();
-		await JS.InvokeVoidAsync("renderLineChart", labelsDailyMood, valuesDailyMood);
+        var moodLabels = new string[] { "sad", "neutral", "happy" };
+        await JS.InvokeVoidAsync("renderDoughnutChart", moodLabels, moodCounts);
+    }
 
-		var labelsActivity = recordCounts.Select(s => s.Label).ToArray();
-		var valuesActivity = recordCounts.Select(s => s.CountOfRecords).ToArray();
-		await JS.InvokeVoidAsync("renderBarChart", labelsActivity, valuesActivity);
+    // Mood trend methods
+    private async Task LoadMoodTrend()
+    {
+        string userCode = Session.CurrentUser.UserCode;
+        dailyMoods = await StatsService.GetMoodTrendAsync(userCode, moodNavigator.Period, moodNavigator.Start, moodNavigator.End);
 
-		var moodLabels = new string[] { "sad", "neutral", "happy" };
-		await JS.InvokeVoidAsync("renderDoughnutChart", moodLabels, moodCounts);
-	}
+        string xLabel = moodNavigator.Period switch
+        {
+            StatisticPeriod.Week => "Ден от седмицата",
+            StatisticPeriod.Month => "Ден от месеца",
+            StatisticPeriod.Year => "Месец",
+            _ => ""
+        };
 
+        await JS.InvokeVoidAsync("updateLineChart",
+            dailyMoods.Select(d => d.Label ?? d.DayOrMonth.ToString()).ToArray(),
+            dailyMoods.Select(d => d.AverageMood).ToArray(),
+            xLabel);
+    }
 
+    private async Task ChangeMoodTrendPeriod(StatisticPeriod period)
+    {
+        moodNavigator.SetPeriod(period);
+        await LoadMoodTrend();
+    }
 
-	// ======================
-	// LINE CHART (Mood Trend)
-	// ======================
+    private async Task PrevPeriod()
+    {
+        moodNavigator.Prev();
+        await LoadMoodTrend();
+    }
 
-	private async Task LoadMoodTrend()
-	{
-		string userCode = Session.CurrentUser.UserCode;
+    private async Task NextPeriod()
+    {
+        moodNavigator.Next();
+        await LoadMoodTrend();
+    }
 
-		dailyMoods = await StatsService.GetMoodTrendAsync(userCode, moodTrendPeriod, currentStart, currentEnd);
+    private async Task GoToToday()
+    {
+        moodNavigator.SetToToday();
+        await LoadMoodTrend();
+    }
 
-		string xLabel = moodTrendPeriod switch
-		{
-			StatisticPeriod.Week => "Ден от седмицата",
-			StatisticPeriod.Month => "Ден от месеца",
-			StatisticPeriod.Year => "Месец",
-			_ => ""
-		};
+    // Activity methods
+    private async Task LoadActivityChart()
+    {
+        string userCode = Session.CurrentUser.UserCode;
+        recordCounts = await StatsService.GetActivityStatsAsync(userCode, activityNavigator.Period, activityNavigator.Start, activityNavigator.End);
 
-		var labels = dailyMoods.Select(d => d.Label ?? d.DayOrMonth.ToString()).ToArray();
-		var values = dailyMoods.Select(d => d.AverageMood).ToArray();
+        string xLabel = activityNavigator.Period switch
+        {
+            StatisticPeriod.Week => "Ден от седмицата",
+            StatisticPeriod.Month => "Ден от месеца",
+            StatisticPeriod.Year => "Месец",
+            _ => ""
+        };
 
-		await JS.InvokeVoidAsync("updateLineChart", labels, values, xLabel);
-	}
+        await JS.InvokeVoidAsync("updateBarChart",
+            recordCounts.Select(d => d.Label ?? d.DayOrMonth.ToString()).ToArray(),
+            recordCounts.Select(d => d.CountOfRecords).ToArray(),
+            xLabel);
+    }
 
-	private async Task ChangeMoodTrendPeriod(StatisticPeriod period)
-	{
-		moodTrendPeriod = period;
-		SetCurrentPeriodToToday();
-		await LoadMoodTrend();
-	}
+    private async Task ChangeActivityPeriod(StatisticPeriod period)
+    {
+        activityNavigator.SetPeriod(period);
+        await LoadActivityChart();
+    }
 
-	private async Task PrevPeriod()
-	{
-		switch (moodTrendPeriod)
-		{
-			case StatisticPeriod.Week:
-				var prevWeek = currentStart.AddDays(-7);
-				if (prevWeek < minDate) prevWeek = minDate;
-				currentStart = prevWeek;
-				currentEnd = currentStart.AddDays(6);
-				break;
-			case StatisticPeriod.Month:
-				var prevMonth = currentStart.AddMonths(-1);
-				if (prevMonth < minDate) prevMonth = new DateTime(minDate.Year, minDate.Month, 1);
-				currentStart = prevMonth;
-				currentEnd = currentStart.AddMonths(1).AddDays(-1);
-				break;
-			case StatisticPeriod.Year:
-				var prevYear = currentStart.AddYears(-1);
-				if (prevYear < minDate) prevYear = new DateTime(minDate.Year, 1, 1);
-				currentStart = prevYear;
-				currentEnd = new DateTime(currentStart.Year, 12, 31);
-				break;
-		}
+    private async Task PrevActivityPeriod()
+    {
+        activityNavigator.Prev();
+        await LoadActivityChart();
+    }
 
-		await LoadMoodTrend();
-	}
+    private async Task NextActivityPeriod()
+    {
+        activityNavigator.Next();
+        await LoadActivityChart();
+    }
 
-	private async Task NextPeriod()
-	{
-		switch (moodTrendPeriod)
-		{
-			case StatisticPeriod.Week:
-				var nextWeek = currentStart.AddDays(7);
-				if (nextWeek > maxDate) nextWeek = maxDate.AddDays(-6);
-				currentStart = nextWeek;
-				currentEnd = currentStart.AddDays(6);
-				break;
-			case StatisticPeriod.Month:
-				var nextMonth = currentStart.AddMonths(1);
-				if (nextMonth > maxDate) nextMonth = new DateTime(maxDate.Year, maxDate.Month, 1);
-				currentStart = nextMonth;
-				currentEnd = currentStart.AddMonths(1).AddDays(-1);
-				break;
-			case StatisticPeriod.Year:
-				var nextYear = currentStart.AddYears(1);
-				if (nextYear > maxDate) nextYear = new DateTime(maxDate.Year, 1, 1);
-				currentStart = nextYear;
-				currentEnd = new DateTime(currentStart.Year, 12, 31);
-				break;
-		}
+    private async Task GoToTodayActivity()
+    {
+        activityNavigator.SetToToday();
+        await LoadActivityChart();
+    }
 
-		await LoadMoodTrend();
-	}
+    //Mood Count Methods
+    private async Task LoadMoodCountsChart()
+    {
+        string userCode = Session.CurrentUser.UserCode;
 
-	private async Task GoToToday()
-	{
-		var now = DateTime.Now;
-		switch (moodTrendPeriod)
-		{
-			case StatisticPeriod.Week:
-				int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
-				currentStart = now.AddDays(-diff).Date;
-				currentEnd = currentStart.AddDays(6);
-				break;
-			case StatisticPeriod.Month:
-				currentStart = new DateTime(now.Year, now.Month, 1);
-				currentEnd = currentStart.AddMonths(1).AddDays(-1);
-				break;
-			case StatisticPeriod.Year:
-				currentStart = new DateTime(now.Year, 1, 1);
-				currentEnd = new DateTime(now.Year, 12, 31);
-				break;
-		}
+        moodCounts = await StatsService.GetMonthlyMoodCountsAsync(userCode, countNavigator.Period, countNavigator.Start, countNavigator.End);
 
-		await LoadMoodTrend();
-	}
+        var labels = new string[] { "негативно", "неутрално", "позитивно" };
+        await JS.InvokeVoidAsync("updateDoughnutChart", labels, moodCounts, "Брояч на настроенията");
+    }
 
-	private string GetPeriodLabel()
-	{
-		switch (moodTrendPeriod)
-		{
-			case StatisticPeriod.Week:
-				return (currentStart.Year != currentEnd.Year || currentStart.Year != DateTime.Now.Year)
-					? $"{currentStart:dd.MM.yyyy} - {currentEnd:dd.MM.yyyy}"
-					: $"{currentStart:dd.MM} - {currentEnd:dd.MM}";
-			case StatisticPeriod.Month:
-				return currentStart.Year != DateTime.Now.Year
-					? currentStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture)
-					: currentStart.ToString("MMMM", CultureInfo.CurrentCulture);
-			case StatisticPeriod.Year:
-				return currentStart.Year.ToString();
-			default:
-				return "";
-		}
-	}
+    private async Task ChangeMoodCountsPeriod(StatisticPeriod period)
+    {
+        countNavigator.SetPeriod(period);
+        await LoadMoodCountsChart();
+    }
 
-	private void SetCurrentPeriodToToday()
-	{
-		var now = DateTime.Now;
-		switch (moodTrendPeriod)
-		{
-			case StatisticPeriod.Week:
-				int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
-				currentStart = now.AddDays(-diff).Date;
-				currentEnd = currentStart.AddDays(6);
-				break;
-			case StatisticPeriod.Month:
-				currentStart = new DateTime(now.Year, now.Month, 1);
-				currentEnd = currentStart.AddMonths(1).AddDays(-1);
-				break;
-			case StatisticPeriod.Year:
-				currentStart = new DateTime(now.Year, 1, 1);
-				currentEnd = new DateTime(now.Year, 12, 31);
-				break;
-		}
-	}
+    private async Task PrevMoodCountsPeriod()
+    {
+        countNavigator.Prev();
+        await LoadMoodCountsChart();
+    }
 
+    private async Task NextMoodCountsPeriod()
+    {
+        countNavigator.Next();
+        await LoadMoodCountsChart();
+    }
 
-
-	// ======================
-	// BAR CHART (Activity) 
-	// ======================
-
-	private void SetActivityPeriodToToday()
-	{
-		var now = DateTime.Now;
-		switch (activityPeriod)
-		{
-			case StatisticPeriod.Week:
-				int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
-				activityStart = now.AddDays(-diff).Date;
-				activityEnd = activityStart.AddDays(6);
-				break;
-			case StatisticPeriod.Month:
-				activityStart = new DateTime(now.Year, now.Month, 1);
-				activityEnd = activityStart.AddMonths(1).AddDays(-1);
-				break;
-			case StatisticPeriod.Year:
-				activityStart = new DateTime(now.Year, 1, 1);
-				activityEnd = new DateTime(now.Year, 12, 31);
-				break;
-		}
-	}
-
-	private async Task ChangeActivityPeriod(StatisticPeriod period)
-	{
-		activityPeriod = period;
-		SetActivityPeriodToToday();
-		await LoadActivityChart();
-	}
-
-	private async Task PrevActivityPeriod()
-	{
-		switch (activityPeriod)
-		{
-			case StatisticPeriod.Week:
-				activityStart = activityStart.AddDays(-7);
-				activityEnd = activityStart.AddDays(6);
-				break;
-			case StatisticPeriod.Month:
-				activityStart = activityStart.AddMonths(-1);
-				activityEnd = activityStart.AddMonths(1).AddDays(-1);
-				break;
-			case StatisticPeriod.Year:
-				activityStart = activityStart.AddYears(-1);
-				activityEnd = new DateTime(activityStart.Year, 12, 31);
-				break;
-		}
-
-		await LoadActivityChart();
-	}
-
-	private async Task NextActivityPeriod()
-	{
-		switch (activityPeriod)
-		{
-			case StatisticPeriod.Week:
-				activityStart = activityStart.AddDays(7);
-				activityEnd = activityStart.AddDays(6);
-				break;
-			case StatisticPeriod.Month:
-				activityStart = activityStart.AddMonths(1);
-				activityEnd = activityStart.AddMonths(1).AddDays(-1);
-				break;
-			case StatisticPeriod.Year:
-				activityStart = activityStart.AddYears(1);
-				activityEnd = new DateTime(activityStart.Year, 12, 31);
-				break;
-		}
-
-		await LoadActivityChart();
-	}
-
-	private async Task LoadActivityChart()
-	{
-		string userCode = Session.CurrentUser.UserCode;
-
-		recordCounts = await StatsService.GetActivityStatsAsync(userCode, activityPeriod, activityStart, activityEnd);
-
-		string xLabel = activityPeriod switch
-		{
-			StatisticPeriod.Week => "Ден от седмицата",
-			StatisticPeriod.Month => "Ден от месеца",
-			StatisticPeriod.Year => "Месец",
-			_ => ""
-		};
-
-		var labelsActivity = recordCounts.Select(a => a.Label ?? a.DayOrMonth.ToString()).ToArray();
-		var valuesActivity = recordCounts.Select(a => a.CountOfRecords).ToArray();
-
-		await JS.InvokeVoidAsync("updateBarChart", labelsActivity, valuesActivity, xLabel);
-	}
-
-	private string GetPeriodLabelActivity()
-	{
-		switch (activityPeriod)
-		{
-			case StatisticPeriod.Week:
-				return (activityStart.Year != activityEnd.Year || activityStart.Year != DateTime.Now.Year)
-					? $"{activityStart:dd.MM.yyyy} - {activityEnd:dd.MM.yyyy}"
-					: $"{activityStart:dd.MM} - {activityEnd:dd.MM}";
-			case StatisticPeriod.Month:
-				return activityStart.Year != DateTime.Now.Year
-					? activityStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture)
-					: activityStart.ToString("MMMM", CultureInfo.CurrentCulture);
-			case StatisticPeriod.Year:
-				return activityStart.Year.ToString();
-			default:
-				return "";
-		}
-	}
-
-	private async Task GoToTodayActivity()
-	{
-		var now = DateTime.Now;
-		switch (activityPeriod)
-		{
-			case StatisticPeriod.Week:
-				int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
-				activityStart = now.AddDays(-diff).Date;
-				activityEnd = activityStart.AddDays(6);
-				break;
-			case StatisticPeriod.Month:
-				activityStart = new DateTime(now.Year, now.Month, 1);
-				activityEnd = activityStart.AddMonths(1).AddDays(-1);
-				break;
-			case StatisticPeriod.Year:
-				activityStart = new DateTime(now.Year, 1, 1);
-				activityEnd = new DateTime(now.Year, 12, 31);
-				break;
-		}
-
-		await LoadActivityChart();
-	}
-
+    private async Task GoToTodayMoodCounts()
+    {
+        countNavigator.SetToToday();
+        await LoadMoodCountsChart();
+    }
 }
