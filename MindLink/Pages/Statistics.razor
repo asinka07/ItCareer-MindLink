@@ -6,13 +6,28 @@
 @using Microsoft.AspNetCore.Identity
 @using MindLink.Data.ViewModels
 @using MindLink.Data.Services
+@using MindLink.Data.Enums
 <link href="css/site.css" rel="stylesheet" />
-<link href="css/MyProfile.css" rel="stylesheet" />
+<link href="css/statistics.css" rel="stylesheet" />
 
 <PageTitle>MindLink - Статистики</PageTitle>
 
 <div style="display: flex; flex-direction: row; width: 80vw; height: 80vh;">
 	<div style="display: flex; flex-direction: column; width: 50%; height: 100%;">
+		<div>
+			<button class="period-button @(moodTrendPeriod == StatisticPeriod.Week ? "selected" : "")"
+					@onclick="() => ChangeMoodTrendPeriod(StatisticPeriod.Week)">
+				Седмица
+			</button>
+			<button class="period-button @(moodTrendPeriod == StatisticPeriod.Month ? "selected" : "")"
+					@onclick="() => ChangeMoodTrendPeriod(StatisticPeriod.Month)">
+				Месец
+			</button>
+			<button class="period-button @(moodTrendPeriod == StatisticPeriod.Year ? "selected" : "")"
+					@onclick="() => ChangeMoodTrendPeriod(StatisticPeriod.Year)">
+				Година
+			</button>
+		</div>
 		<canvas id="lineChart" style="flex: 1; width: 100%;"></canvas>
 		<canvas id="barChart" style="flex: 1; width: 100%;"></canvas>
 	</div>
@@ -25,15 +40,18 @@
 
 @code {
 
-	private List<DailyMood> dailyMoods = new();
+	private List<LineChartStatistic> dailyMoods = new();
 	private List<MonthlyStatistics> stats = new();
 	private int[] moodCounts = new int[3];
 
+	private StatisticPeriod activityPeriod = StatisticPeriod.Week;
+	private StatisticPeriod moodTrendPeriod = StatisticPeriod.Week;
+	private StatisticPeriod distributionPeriod = StatisticPeriod.Month;
 
 	protected override async Task OnInitializedAsync()
 	{
 		string userCode = Session.CurrentUser.UserCode;
-		dailyMoods = await StatsService.GetDailyMoodCurrentMonthAsync(userCode);
+		dailyMoods = await StatsService.GetMoodTrendAsync(userCode, moodTrendPeriod);
 		stats = await StatsService.GetMonthlyStatsAsync(userCode);
 		moodCounts = await StatsService.GetMonthlyMoodCountsAsync(userCode);
 	}
@@ -42,7 +60,7 @@
 	{
 		if (firstRender && stats.Any())
 		{
-			var labelsDailyMood = dailyMoods.Select(d => d.Day.ToString()).ToArray();
+			var labelsDailyMood = dailyMoods.Select(d => d.DayOrMonth.ToString()).ToArray();
 			var valuesDailyMood = dailyMoods.Select(d => d.AverageMood).ToArray();
 			await JS.InvokeVoidAsync("renderLineChart", labelsDailyMood, valuesDailyMood);
 
@@ -54,5 +72,41 @@
 			await JS.InvokeVoidAsync("renderDoughnutChart", moodLabels, moodCounts);
 
 		}
+	}
+
+	private async Task LoadMoodTrend()
+	{
+		string userCode = Session.CurrentUser.UserCode;
+
+		dailyMoods = await StatsService.GetMoodTrendAsync(userCode, moodTrendPeriod);
+
+		string xLabel;
+
+		switch (moodTrendPeriod)
+		{
+			case StatisticPeriod.Week:
+				xLabel = "Ден от седмицата";
+				break;
+			case StatisticPeriod.Month:
+				xLabel = "Ден от месеца";
+				break;
+			case StatisticPeriod.Year:
+				xLabel = "Месец";
+				break;
+			default:
+				xLabel = "Ден от месеца";
+				break;
+		}
+
+		var labels = dailyMoods.Select(d => d.Label ?? d.DayOrMonth.ToString()).ToArray();
+		var values = dailyMoods.Select(d => d.AverageMood).ToArray();
+
+		await JS.InvokeVoidAsync("updateLineChart", labels, values, xLabel);
+	}
+
+	private async Task ChangeMoodTrendPeriod(StatisticPeriod period)
+	{
+		moodTrendPeriod = period;
+		await LoadMoodTrend();
 	}
 }

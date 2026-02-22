@@ -1,0 +1,20 @@
+.period-button {
+    padding: 4px 12px;
+    margin-right: 8px;
+    border: 1px solid #659b9b;
+    background-color: rgba(189, 255, 254,0.2);
+    color: black;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .period-button:hover {
+        background-color: rgba(189, 255, 254, 0.5);
+        color: black;
+    }
+
+    .period-button.selected {
+        background-color: rgba(189, 255, 254, 0.7);
+        color: black;
+    }
