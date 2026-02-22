@@ -155,7 +155,6 @@ namespace MindLink.Data.Services
 
             if (period == StatisticPeriod.Year)
             {
-                // Групиране по месец
                 data = await dataQuery
                     .GroupBy(r => r.RecordDate.Month)
                     .Select(g => new BarChartStatistic
@@ -207,7 +206,6 @@ namespace MindLink.Data.Services
             }
             else
             {
-                // Групиране по ден от седмицата (Week)
                 data = await dataQuery
                     .GroupBy(r => r.RecordDate.Date)
                     .Select(g => new BarChartStatistic

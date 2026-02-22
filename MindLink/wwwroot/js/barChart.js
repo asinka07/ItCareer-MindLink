@@ -27,7 +27,7 @@ window.renderBarChart = (labels, values) => {
                 label: "Брой записи",
                 data: values,
                 backgroundColor: "#decffc",
-                borderRadius: 6
+                borderRadius: 0
             }]
         },
         options: {

@@ -43,6 +43,9 @@ window.renderLineChart = (labels, values) => {
                     display: true,
                     text: 'Как се променя настроението ти',
                     font: { size: 28 }
+                },
+                legend: {
+                    display: false
                 }
             },
             interaction: { intersect: false },

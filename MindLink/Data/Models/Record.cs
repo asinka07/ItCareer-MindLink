@@ -11,7 +11,6 @@
         public DateTime RecordDate { get; set; }
         public string? Sentiment { get; set; }
         public int Rate { get; set; }
-        public string? Sentiment { get; set; } // for AI
 
     }
 }
