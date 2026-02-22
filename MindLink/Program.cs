@@ -9,11 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
 builder.Services.AddServerSideBlazor();
-builder.Services.AddDbContext<MindLinkDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDbContext<MindLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddSingleton<UserSessionService>();
+
+builder.Services.AddScoped<StatisticsService>();
+
 builder.Services.AddMudServices();
 builder.Services.AddHttpClient<SentimentService>();
 var app = builder.Build();

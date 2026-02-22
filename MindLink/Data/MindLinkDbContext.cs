@@ -83,11 +83,13 @@ public class MindLinkDbContext : DbContext
                   .HasColumnType("text")
                   .IsRequired();
 
-
             entity.HasOne(r => r.User)
                   .WithMany(u => u.Records)
                   .HasForeignKey(r => r.UserCode)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(r => r.Sentiment)
+            .HasColumnType("nvarchar(20)");
         });
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MindLinkDbContext).Assembly);
