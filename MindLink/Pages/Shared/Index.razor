@@ -7,89 +7,90 @@
 
 <div class="container" role="main" aria-labelledby="heroTitle">
 
-    <header class="topbar">
-        <div class="brand">
-            <div class="">
-            </div>
-            <div>
-                <img src="\images\logoTransparent.png" alt="" height="100" width="320">
-                <p style="margin-top: -23px; margin-left: 100px;">Твоето лично пространство за мисли и преживявания.</p>
-            </div>
-        </div>
-        <div class="actions"></div>
-    </header>
+	<header class="topbar">
+		<div class="brand">
+			<div style="display: flex; flex-direction: row; gap:20px;">
+				<img src="\images\logo-1.svg" alt="" style="height: 100px;">
+				<div style="display: flex; flex-direction: column; align-self: center; font-family: math;">
+					<h1 style="font-size: 30px; font-weight: 600;">MindLink</h1>
+					<p style="font-size: 16px;">Твоето лично пространство за мисли и преживявания.</p>
+				</div>
+			</div>
+		</div>
+		<div class="actions"></div>
+	</header>
 
-    <section class="hero" aria-labelledby="heroTitle">
-        <h2 id="heroTitle">Запази мислите си. Подреди деня си.</h2>
-        <p>
-            MindLink е личен дигитален дневник, който ти позволява да
-            записваш своите мисли, преживявания и емоции на сигурно място.
-        </p>
+	<section class="hero" aria-labelledby="heroTitle">
+		<h2 id="heroTitle">Запази мислите си. Подреди деня си.</h2>
+		<p>
+			MindLink е личен дигитален дневник, който ти позволява да
+			записваш своите мисли, преживявания и емоции на сигурно място.
+		</p>
 
-        <div class="cta-buttons">
-            <button class="btn primary large" @onclick="GoToRegister">
-                Започни сега
-            </button>
-            <button class="btn large" @onclick="GoToLogin">
-                Вече имам профил
-            </button>
-        </div>
+		<div class="cta-buttons">
+			<button class="btn primary large" @onclick="GoToRegister">
+				Започни сега
+			</button>
+			<button class="btn large" @onclick="GoToLogin">
+				Вече имам профил
+			</button>
+		</div>
 
-        <div class="card hero-card">
-            <h3>Сигурност и доверие</h3>
-            <p class="muted">
-                Всеки потребител има собствен профил.
-                Записите са достъпни само след вход в системата.
-            </p>
-        </div>
-    </section>
+		<div class="card hero-card">
+			<h3>Сигурност и доверие</h3>
+			<p class="muted">
+				Всеки потребител има собствен профил.
+				Записите са достъпни само след вход в системата.
+			</p>
+		</div>
+	</section>
 
-    <aside class="side">
-        <div class="card">
-            <h3>Как работи</h3>
-            <div class="steps">
-                <div class="step">
-                    <div class="icon">1</div>
-                    <div>
-                        <strong>Създай акаунт</strong>
-                        <div class="muted">Регистрация и защитен достъп.</div>
-                    </div>
-                </div>
+	<aside class="side">
+		<div class="card">
+			<h3>Как работи</h3>
+			<div class="steps">
+				<div class="step">
+					<div class="icon">1</div>
+					<div>
+						<strong>Създай акаунт</strong>
+						<div class="muted">Регистрация и защитен достъп.</div>
+					</div>
+				</div>
 
-                <div class="step">
-                    <div class="icon">2</div>
-                    <div>
-                        <strong>Добавяй записи</strong>
-                        <div class="muted">Записвай мислите си по всяко време.</div>
-                    </div>
-                </div>
+				<div class="step">
+					<div class="icon">2</div>
+					<div>
+						<strong>Добавяй записи</strong>
+						<div class="muted">Записвай мислите си по всяко време.</div>
+					</div>
+				</div>
 
-                <div class="step">
-                    <div class="icon">3</div>
-                    <div>
-                        <strong>Преглеждай историята си</strong>
-                        <div class="muted">Всички записи се пазят с дата и час.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+				<div class="step">
+					<div class="icon">3</div>
+					<div>
+						<strong>Преглеждай историята си</strong>
+						<div class="muted">Всички записи се пазят с дата и час.</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        <div class="card">
-            <h3>Защо MindLink?</h3>
-            <p class="muted">
-                Проект за личен дигитален дневник, изграден с цел
-                сигурност, простота и удобство.
-            </p>
-        </div>
-    </aside>
+		<div class="card">
+			<h3>Защо MindLink?</h3>
+			<p class="muted">
+				Проект за личен дигитален дневник, изграден с цел
+				сигурност, простота и удобство.
+			</p>
+		</div>
+	</aside>
 
-    <footer>
-        <div class="muted">© MindLink — Учебен проект</div>
-    </footer>
+	<footer>
+		<div class="muted">© MindLink — Учебен проект</div>
+	</footer>
 
 </div>
 
 @code {
-    void GoToLogin() => NavManager.NavigateTo("/login");
-    void GoToRegister() => NavManager.NavigateTo("/signup");
+	void GoToLogin() => NavManager.NavigateTo("/login");
+	void GoToRegister() => NavManager.NavigateTo("/signup");
 }
