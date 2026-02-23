@@ -124,7 +124,7 @@
             user.LastLogin = DateTime.Now;
             await _usersService.LogUser(user);
             await _logsService.CreateLog(user, "Успешен вход");
-            Nav.NavigateTo("/admin-panel");
+            Nav.NavigateTo("/admin/panel");
         }
         else
         {

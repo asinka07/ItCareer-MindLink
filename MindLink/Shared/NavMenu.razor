@@ -43,12 +43,17 @@
         @if (Session.IsLoggedIn && Session.CurrentUser?.RoleId == 2)
         {
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="/admin-panel">
+                <NavLink class="nav-link" href="/admin/panel">
                     <span class="oi oi-people" aria-hidden="true"></span> Потребители
                 </NavLink>
             </div>
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="/admin-resources">
+                <NavLink class="nav-link" href="/admin/user-logs">
+                    <span class="oi oi-spreadsheet" aria-hidden="true"></span> История на влизанията
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/admin/resources">
                     <span class="oi oi-spreadsheet" aria-hidden="true"></span> Ресурси
                 </NavLink>
             </div>

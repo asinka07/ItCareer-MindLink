@@ -15,6 +15,7 @@ public class MindLinkDbContext : DbContext
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<Record> Records => Set<Record>();
     public DbSet<Log> Log => Set<Log>();
+    public DbSet<Resource> Resources => Set<Resource>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -90,6 +91,32 @@ public class MindLinkDbContext : DbContext
 
             entity.Property(r => r.Sentiment)
             .HasColumnType("nvarchar(20)");
+        });
+
+        modelBuilder.Entity<Resource>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+
+            entity.Property(r => r.Title)
+                  .HasColumnType("nvachar(150)")
+                  .IsRequired();
+
+            entity.Property(r => r.Content)
+                  .HasColumnType("text")
+                  .IsRequired();
+
+            entity.Property(r => r.Emotion)
+                  .HasColumnType("nvarchar(10)")
+                  .IsRequired();
+
+            entity.Property(r => r.IsVisible)
+                  .HasColumnType("bool")
+                  .IsRequired();
+
+            entity.Property(u => u.CreatedOn)
+                  .HasColumnType("datetime2")
+                  .HasDefaultValueSql("GETDATE()")
+                  .IsRequired();
         });
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MindLinkDbContext).Assembly);

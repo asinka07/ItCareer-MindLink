@@ -1,3 +1,9 @@
+.page-title {
+    font-size: 28px;
+    margin-bottom: 5px;
+    color: #1F2937;
+}
+
 .admin-page {
     position: relative;
     padding: 20px;
