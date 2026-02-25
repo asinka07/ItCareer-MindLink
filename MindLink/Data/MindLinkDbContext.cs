@@ -110,7 +110,7 @@ public class MindLinkDbContext : DbContext
                   .IsRequired();
 
             entity.Property(r => r.IsVisible)
-                  .HasColumnType("bool")
+                  .HasColumnType("bit")
                   .IsRequired();
 
             entity.Property(u => u.CreatedOn)
