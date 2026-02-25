@@ -18,6 +18,8 @@ builder.Services.AddSingleton<UserSessionService>();
 
 builder.Services.AddScoped<StatisticsService>();
 
+builder.Services.AddScoped<DashboardService>();
+
 builder.Services.AddMudServices();
 builder.Services.AddHttpClient<SentimentService>();
 var app = builder.Build();
