@@ -67,7 +67,7 @@ namespace MindLink.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Sentiment")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("UserCode")
                         .IsRequired()
@@ -78,6 +78,39 @@ namespace MindLink.Migrations
                     b.HasIndex("UserCode");
 
                     b.ToTable("Records");
+                });
+
+            modelBuilder.Entity("MindLink.Data.Models.Resource", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<string>("Emotion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bool");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvachar(150)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Resources");
                 });
 
             modelBuilder.Entity("MindLink.Data.Models.Role", b =>

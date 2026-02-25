@@ -12,8 +12,8 @@ using MindLink.Data;
 namespace MindLink.Migrations
 {
     [DbContext(typeof(MindLinkDbContext))]
-    [Migration("20260214074304_DbChanges")]
-    partial class DbChanges
+    [Migration("20260225201118_db")]
+    partial class db
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,32 @@ namespace MindLink.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("MindLink.Data.Models.Log", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserCode")
+                        .IsRequired()
+                        .HasColumnType("char(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserCode");
+
+                    b.ToTable("Log");
+                });
 
             modelBuilder.Entity("MindLink.Data.Models.Record", b =>
                 {
@@ -43,6 +69,9 @@ namespace MindLink.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Sentiment")
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("UserCode")
                         .IsRequired()
                         .HasColumnType("char(6)");
@@ -52,6 +81,39 @@ namespace MindLink.Migrations
                     b.HasIndex("UserCode");
 
                     b.ToTable("Records");
+                });
+
+            modelBuilder.Entity("MindLink.Data.Models.Resource", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<string>("Emotion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bool");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvachar(150)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Resources");
                 });
 
             modelBuilder.Entity("MindLink.Data.Models.Role", b =>
@@ -128,6 +190,43 @@ namespace MindLink.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            UserCode = "bLZoUT",
+                            Birthday = new DateTime(2000, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 2, 14, 9, 43, 19, 140, DateTimeKind.Unspecified),
+                            Gender = "m",
+                            LastLogin = new DateTime(2026, 2, 14, 22, 46, 55, 879, DateTimeKind.Unspecified).AddTicks(7045),
+                            Name = "Super Admin",
+                            Password = "AQAAAAIAAYagAAAAEJJG/NCL8BXPg/UXNCdW63SHrXqyt4M/Yuf5jkyxzlJhBUdahGYJiAJsc4ioN89azA==",
+                            RoleId = 2,
+                            Username = "admin_user"
+                        },
+                        new
+                        {
+                            UserCode = "111111",
+                            Birthday = new DateTime(2000, 10, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 2, 14, 9, 43, 19, 140, DateTimeKind.Unspecified),
+                            Gender = "f",
+                            LastLogin = new DateTime(2026, 2, 14, 22, 46, 55, 879, DateTimeKind.Unspecified).AddTicks(7045),
+                            Name = "Error",
+                            Password = "111111",
+                            RoleId = 1,
+                            Username = "Error"
+                        });
+                });
+
+            modelBuilder.Entity("MindLink.Data.Models.Log", b =>
+                {
+                    b.HasOne("MindLink.Data.Models.User", "User")
+                        .WithMany("Logs")
+                        .HasForeignKey("UserCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MindLink.Data.Models.Record", b =>
@@ -159,6 +258,8 @@ namespace MindLink.Migrations
 
             modelBuilder.Entity("MindLink.Data.Models.User", b =>
                 {
+                    b.Navigation("Logs");
+
                     b.Navigation("Records");
                 });
 #pragma warning restore 612, 618
