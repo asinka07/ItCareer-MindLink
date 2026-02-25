@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
+@inject HttpClient Http
 
 <link href="css/mindlink-index.css" rel="stylesheet" />
 
@@ -7,90 +8,238 @@
 
 <div class="container" role="main" aria-labelledby="heroTitle">
 
-	<header class="topbar">
-		<div class="brand">
-			<div style="display: flex; flex-direction: row; gap:20px;">
-				<img src="\images\logo-1.svg" alt="" style="height: 100px;">
-				<div style="display: flex; flex-direction: column; align-self: center; font-family: math;">
-					<h1 style="font-size: 30px; font-weight: 600;">MindLink</h1>
-					<p style="font-size: 16px;">Твоето лично пространство за мисли и преживявания.</p>
-				</div>
-			</div>
-		</div>
-		<div class="actions"></div>
-	</header>
+    <header class="topbar">
+        <div class="brand">
+            <div style="display: flex; flex-direction: row; gap:20px;">
+                <img src="\images\logo-1.svg" alt="" style="height: 100px;">
+                <div style="display: flex; flex-direction: column; align-self: center; font-family: math;">
+                    <h1 style="font-size: 30px; font-weight: 600;">MindLink</h1>
+                    <p style="font-size: 16px;">Твоето лично пространство за мисли и преживявания.</p>
+                </div>
+            </div>
+        </div>
+        <div class="actions"></div>
+    </header>
 
-	<section class="hero" aria-labelledby="heroTitle">
-		<h2 id="heroTitle">Запази мислите си. Подреди деня си.</h2>
-		<p>
-			MindLink е личен дигитален дневник, който ти позволява да
-			записваш своите мисли, преживявания и емоции на сигурно място.
-		</p>
+    <section class="hero" aria-labelledby="heroTitle">
+        <h3 id="heroTitle">Запази мислите си.</h3>
+        <p>
+            MindLink е личен дигитален дневник, който ти позволява да
+            записваш своите мисли, преживявания и емоции на сигурно място.
+        </p>
 
-		<div class="cta-buttons">
-			<button class="btn primary large" @onclick="GoToRegister">
-				Започни сега
-			</button>
-			<button class="btn large" @onclick="GoToLogin">
-				Вече имам профил
-			</button>
-		</div>
+        <div class="cta-buttons">
+            <button class="btn primary large" @onclick="GoToRegister">
+                Започни сега
+            </button>
+            <button class="btn large" @onclick="GoToLogin">
+                Вече имам профил
+            </button>
+        </div>
 
-		<div class="card hero-card">
-			<h3>Сигурност и доверие</h3>
-			<p class="muted">
-				Всеки потребител има собствен профил.
-				Записите са достъпни само след вход в системата.
-			</p>
-		</div>
-	</section>
+        <div class="card hero-card">
+            <h4>Сигурност и доверие</h4>
+            <p class="muted">
+                Всеки потребител има собствен профил.
+                Записите са достъпни само след вход в системата.
+            </p>
+        </div>
 
-	<aside class="side">
-		<div class="card">
-			<h3>Как работи</h3>
-			<div class="steps">
-				<div class="step">
-					<div class="icon">1</div>
-					<div>
-						<strong>Създай акаунт</strong>
-						<div class="muted">Регистрация и защитен достъп.</div>
-					</div>
-				</div>
+        @* ── DEMO SECTION ── *@
+        <div class="card" style="margin-top: 20px;">
+            <h3>🧠 Изпробвай AI анализа</h3>
+            <p class="muted" style="margin-bottom: 12px;">
+                Напиши нещо и виж как изкуственият интелект оценява твоето настроение — без регистрация.
+            </p>
+            <textarea class="journal-textarea"
+                      style="width: 100%; min-height: 90px; resize: vertical; padding: 10px; border-radius: 8px; border: 1px solid #d1fae5; font-family: inherit; font-size: 14px; outline: none;"
+                      placeholder="Напиши как се чувстваш в момента..."
+                      @bind="demoText"
+                      @bind:event="oninput"
+                          disabled="@isAnalyzing">
+            </textarea>
+                <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center;">
+                    <button class="btn primary" @onclick="AnalyzeDemo" disabled="@(isAnalyzing || string.IsNullOrWhiteSpace(demoText))">
+                        @(isAnalyzing ? "Анализира се..." : "Анализирай")
+                    </button>
+                    @if (!string.IsNullOrWhiteSpace(demoText))
+                    {
+                        <button class="btn" @onclick="ClearDemo" style="font-size: 13px;">Изчисти</button>
+                    }
+                </div>
+            </div>
 
-				<div class="step">
-					<div class="icon">2</div>
-					<div>
-						<strong>Добавяй записи</strong>
-						<div class="muted">Записвай мислите си по всяко време.</div>
-					</div>
-				</div>
+        </section>
 
-				<div class="step">
-					<div class="icon">3</div>
-					<div>
-						<strong>Преглеждай историята си</strong>
-						<div class="muted">Всички записи се пазят с дата и час.</div>
-					</div>
-				</div>
-			</div>
-		</div>
+        <aside class="side">
+            <div class="card">
+                <h3>Как работи</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="icon">1</div>
+                        <div>
+                            <strong>Създай акаунт</strong>
+                            <div class="muted">Регистрирай се безплатно за секунди. Нужни са само основни данни и парола.</div>
+                        </div>
+                    </div>
 
-		<div class="card">
-			<h3>Защо MindLink?</h3>
-			<p class="muted">
-				Проект за личен дигитален дневник, изграден с цел
-				сигурност, простота и удобство.
-			</p>
-		</div>
-	</aside>
+                    <div class="step">
+                        <div class="icon">2</div>
+                        <div>
+                            <strong>Пиши своя дневник</strong>
+                            <div class="muted">Описвай мислите и чувствата си всеки ден — в свободен текст, без ограничения.</div>
+                        </div>
+                    </div>
 
-	<footer>
-		<div class="muted">© MindLink — Учебен проект</div>
-	</footer>
+                    <div class="step">
+                        <div class="icon">3</div>
+                        <div>
+                            <strong>AI анализира настроението ти</strong>
+                            <div class="muted">Всеки запис автоматично получава емоционална оценка — положителна, неутрална или отрицателна.</div>
+                        </div>
+                    </div>
 
-</div>
+                    <div class="step">
+                        <div class="icon">4</div>
+                        <div>
+                            <strong>Следи прогреса си</strong>
+                            <div class="muted">Разглеждай архива и статистиките си — вижи как се променя настроението ти с времето.</div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="icon">5</div>
+                        <div>
+                            <strong>Получавай персонализирани ресурси</strong>
+                            <div class="muted">Приложението предлага статии и съвети, съобразени с твоето емоционално състояние.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Защо MindLink?</h3>
+                <p class="muted">
+                    MindLink не е просто дневник — той разбира как се чувстваш. С помощта на изкуствен интелект анализира всеки твой запис и ти помага да разпознаеш емоционалните си модели. Разработен с цел сигурност, простота и истинска подкрепа за психичното здраве.
+                </p>
+            </div>
+        </aside>
+
+        <footer>
+            <div class="muted">© MindLink — Учебен проект</div>
+        </footer>
+
+    </div>
+
+    @* ── DEMO RESULT MODAL ── *@
+    @if (showDemoModal)
+    {
+        <div class="modal-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div class="delete-panel" style="background: #fff; border-radius: 16px; padding: 35px 40px; max-width: 440px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); text-align: center; animation: slideUp 0.22s ease;">
+
+                <div style="font-size: 52px; margin-bottom: 12px;">@demoEmoji</div>
+
+                <h3 style="font-size: 20px; color: #1F2937; margin: 0 0 8px 0;">
+                    Настроението ти изглежда <strong style="color: @demoColor;">@demoLabel</strong>
+                </h3>
+
+                <p class="muted" style="font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
+                    @demoMessage
+                </p>
+
+                <div style="background: #f3f4f6; border-radius: 10px; padding: 12px 16px; margin-bottom: 24px; font-size: 13px; color: #6B7280; font-style: italic;">
+                    „@(demoText.Length > 100 ? demoText.Substring(0, 100) + "…" : demoText)"
+                </div>
+
+                <p style="font-size: 13px; color: #9CA3AF; margin-bottom: 20px;">
+                    🔒 За да запазваш записите си, да следиш прогреса си и да получаваш персонализирани ресурси —
+                    <a href="/signup" style="color: #10B981; font-weight: 600;">регистрирай се безплатно</a>.
+                </p>
+
+                <button class="btn primary" @onclick="CloseDemoModal" style="width: 100%;">Затвори</button>
+            </div>
+        </div>
+    }
 
 @code {
-	void GoToLogin() => NavManager.NavigateTo("/login");
-	void GoToRegister() => NavManager.NavigateTo("/signup");
+    void GoToLogin() => NavManager.NavigateTo("/login");
+    void GoToRegister() => NavManager.NavigateTo("/signup");
+
+    // ── Demo state ──
+    private string demoText = string.Empty;
+    private bool isAnalyzing = false;
+    private bool showDemoModal = false;
+
+    private string demoLabel = string.Empty;
+    private string demoEmoji = string.Empty;
+    private string demoColor = string.Empty;
+    private string demoMessage = string.Empty;
+
+    private async Task AnalyzeDemo()
+    {
+        if (string.IsNullOrWhiteSpace(demoText)) return;
+
+        isAnalyzing = true;
+        StateHasChanged();
+
+        try
+        {
+            var url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=bg&tl=en&dt=t&q={Uri.EscapeDataString(demoText)}";
+            var response = await Http.GetStringAsync(url);
+
+            using var doc = System.Text.Json.JsonDocument.Parse(response);
+            var translated = doc.RootElement[0][0][0].GetString() ?? demoText;
+
+            var analyzer = new VaderSharp2.SentimentIntensityAnalyzer();
+            var results = analyzer.PolarityScores(translated);
+
+            if (results.Compound >= 0.05)
+            {
+                demoLabel = "положително";
+                demoEmoji = "😊";
+                demoColor = "#10B981";
+                demoMessage = "Чудесно! Изглежда, че си в добро настроение. MindLink може да ти помогне да запазиш тези моменти и да проследиш какво ти носи радост.";
+            }
+            else if (results.Compound <= -0.05)
+            {
+                demoLabel = "отрицателно";
+                demoEmoji = "😔";
+                demoColor = "#EF4444";
+                demoMessage = "Изглежда, че преминаваш през труден момент. Не си сам — MindLink може да ти предложи персонализирани ресурси и да ти помогне да проследиш как се чувстваш с времето.";
+            }
+            else
+            {
+                demoLabel = "неутрално";
+                demoEmoji = "😐";
+                demoColor = "#3B82F6";
+                demoMessage = "Настроението ти изглежда балансирано. MindLink може да ти помогне да следиш как се развива емоционалното ти състояние всеки ден.";
+            }
+
+            showDemoModal = true;
+        }
+        catch
+        {
+            demoLabel = "неопределено";
+            demoEmoji = "🤔";
+            demoColor = "#9CA3AF";
+            demoMessage = "Не успяхме да анализираме текста в момента. Моля, опитай отново.";
+            showDemoModal = true;
+        }
+        finally
+        {
+            isAnalyzing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseDemoModal()
+    {
+        showDemoModal = false;
+        demoText = string.Empty;
+    }
+
+    private void ClearDemo()
+    {
+        demoText = string.Empty;
+    }
 }

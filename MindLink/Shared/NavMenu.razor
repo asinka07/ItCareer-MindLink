@@ -5,10 +5,18 @@
 <link href="/css/custom-navbar.css" rel="stylesheet" />
 
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-
-        <a class="navbar-brand" href="\homepage">MindLink</a>
+<div class="top-row ps-3 navbar navbar-dark" style="gap: 10px; flex-direction: row!important; flex-wrap: nowrap!important; justify-content: center!important;">
+    <div class="container-fluid" style="justify-content: center!important; gap: 10px;">
+        @if (Session.IsLoggedIn && Session.CurrentUser?.RoleId == 1)
+        {
+            <a href="\homepage"><img src="\images\logo-1.svg" alt="" style="height: 30px;"></a>
+        <a class="navbar-brand" href="\homepage" style="font-family: serif!important;">MindLink</a>
+        }
+        @if (Session.IsLoggedIn && Session.CurrentUser?.RoleId == 2)
+        {
+            <a href="\admin\dashboard"><img src="\images\logo-1.svg" alt="" style="height: 30px;"></a>
+            <a class="navbar-brand" href="\admin\dashboard" style="font-family: serif!important;">MindLink</a>
+        }
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
