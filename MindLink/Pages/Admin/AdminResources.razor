@@ -1,5 +1,7 @@
 ﻿@page "/admin/resources"
+@inject MindLink.Data.MindLinkDbContext Context
 @using MindLink.Data.Models
+@using MindLink.Data.Services
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="css/admin.css" rel="stylesheet" />
 
@@ -107,9 +109,9 @@
             <div class="panel-body">
                 <div class="form-group">
                     <label>Заглавие <span class="required">*</span></label>
-                    <input type="text" class="form-input @(submitAttempted && string.IsNullOrWhiteSpace(formTitle) ? "input-error" : "")"
-                           placeholder="Въведете заглавие..." @bind="formTitle" />
-                    @if (submitAttempted && string.IsNullOrWhiteSpace(formTitle))
+                    <input type="text" class="form-input @(submitAttempted && string.IsNullOrWhiteSpace(currentResource.Title) ? "input-error" : "")"
+                           placeholder="Въведете заглавие..." @bind="@currentResource.Title" />
+                    @if (submitAttempted && string.IsNullOrWhiteSpace(currentResource.Title))
                     {
                         <span class="field-error">Заглавието е задължително</span>
                     }
@@ -117,9 +119,9 @@
 
                 <div class="form-group content-group">
                     <label>Съдържание <span class="required">*</span></label>
-                    <textarea class="form-textarea @(submitAttempted && string.IsNullOrWhiteSpace(formContent) ? "input-error" : "")"
-                              placeholder="Въведете съдържание на ресурса..." @bind="formContent"></textarea>
-                    @if (submitAttempted && string.IsNullOrWhiteSpace(formContent))
+                    <textarea class="form-textarea @(submitAttempted && string.IsNullOrWhiteSpace(currentResource.Content) ? "input-error" : "")"
+                              placeholder="Въведете съдържание на ресурса..." @bind="@currentResource.Content"></textarea>
+                    @if (submitAttempted && string.IsNullOrWhiteSpace(currentResource.Content))
                     {
                         <span class="field-error">Съдържанието е задължително</span>
                     }
@@ -128,13 +130,13 @@
                 <div class="form-row">
                     <div class="form-group half">
                         <label>Настроение <span class="required">*</span></label>
-                        <select class="form-input @(submitAttempted && string.IsNullOrWhiteSpace(formEmotion) ? "input-error" : "")" @bind="formEmotion">
+                        <select class="form-input @(submitAttempted && string.IsNullOrWhiteSpace(currentResource.Emotion) ? "input-error" : "")" @bind="@currentResource.Emotion">
                             <option value="">-- Изберете --</option>
                             <option value="Позитивно">Позитивно</option>
                             <option value="Неутрално">Неутрално</option>
                             <option value="Негативно">Негативно</option>
                         </select>
-                        @if (submitAttempted && string.IsNullOrWhiteSpace(formEmotion))
+                        @if (submitAttempted && string.IsNullOrWhiteSpace(currentResource.Emotion))
                         {
                             <span class="field-error">Изберете настроение</span>
                         }
@@ -175,9 +177,9 @@
             <div class="panel-body">
                 <div class="form-group">
                     <label>Заглавие <span class="required">*</span></label>
-                    <input type="text" class="form-input @(submitAttempted && string.IsNullOrWhiteSpace(formTitle) ? "input-error" : "")"
-                           placeholder="Въведете заглавие..." @bind="formTitle" />
-                    @if (submitAttempted && string.IsNullOrWhiteSpace(formTitle))
+                    <input type="text" class="form-input @(submitAttempted && string.IsNullOrWhiteSpace(currentResource.Title) ? "input-error" : "")"
+                           placeholder="Въведете заглавие..." @bind="@currentResource.Title" />
+                    @if (submitAttempted && string.IsNullOrWhiteSpace(currentResource.Title))
                     {
                         <span class="field-error">Заглавието е задължително</span>
                     }
@@ -185,9 +187,9 @@
 
                 <div class="form-group content-group">
                     <label>Съдържание <span class="required">*</span></label>
-                    <textarea class="form-textarea @(submitAttempted && string.IsNullOrWhiteSpace(formContent) ? "input-error" : "")"
-                              placeholder="Въведете съдържание на ресурса..." @bind="formContent"></textarea>
-                    @if (submitAttempted && string.IsNullOrWhiteSpace(formContent))
+                    <textarea class="form-textarea @(submitAttempted && string.IsNullOrWhiteSpace(currentResource.Content) ? "input-error" : "")"
+                              placeholder="Въведете съдържание на ресурса..." @bind="@currentResource.Content"></textarea>
+                    @if (submitAttempted && string.IsNullOrWhiteSpace(currentResource.Content))
                     {
                         <span class="field-error">Съдържанието е задължително</span>
                     }
@@ -196,13 +198,13 @@
                 <div class="form-row">
                     <div class="form-group half">
                         <label>Настроение <span class="required">*</span></label>
-                        <select class="form-input @(submitAttempted && string.IsNullOrWhiteSpace(formEmotion) ? "input-error" : "")" @bind="formEmotion">
+                        <select class="form-input @(submitAttempted && string.IsNullOrWhiteSpace(currentResource.Emotion) ? "input-error" : "")" @bind="@currentResource.Emotion">
                             <option value="">-- Изберете --</option>
                             <option value="Позитивно">Позитивно</option>
                             <option value="Неутрално">Неутрално</option>
                             <option value="Негативно">Негативно</option>
                         </select>
-                        @if (submitAttempted && string.IsNullOrWhiteSpace(formEmotion))
+                        @if (submitAttempted && string.IsNullOrWhiteSpace(currentResource.Emotion))
                         {
                             <span class="field-error">Изберете настроение</span>
                         }
@@ -229,7 +231,7 @@
 @* ─── DELETE MODAL ─── *@
 @if (isDeleteOpen && currentResource != null)
 {
-    <div class="modal-overlay" style="justify-content: center!important;">
+    <div class="modal-overlay">
         <div class="delete-panel">
             <div class="delete-icon-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
@@ -249,7 +251,7 @@
 @* ─── TOGGLE VISIBILITY MODAL ─── *@
 @if (isToggleOpen && currentResource != null)
 {
-    <div class="modal-overlay" style="justify-content: center!important;">
+    <div class="modal-overlay">
         <div class="delete-panel">
             <div class="delete-icon-wrap toggle-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
@@ -274,72 +276,48 @@
 }
 
 @code {
-    private string selectedMood;
-    private string selectedStatus;
-    private bool submitAttempted = false;
+    private ResourcesService _resourcesService = null!;
 
-    private string searchStr;
+    private string selectedMood = string.Empty;
+    private string selectedStatus = string.Empty;
+    private string searchStr = string.Empty;
     private string SearchStr
     {
         get => searchStr;
         set => searchStr = value;
     }
+    private string formTitle = string.Empty;
+    private string formContent = string.Empty;
+    private string formEmotion = string.Empty;
+    private string formIsVisibleStr = "true";
 
-    // ── Modal state ──
     private bool isAddOpen = false;
     private bool isEditOpen = false;
     private bool isDeleteOpen = false;
     private bool isToggleOpen = false;
-    private Resource currentResource = null;
-
-    // ── Shared form fields ──
-    private string formTitle = "";
-    private string formContent = "";
-    private string formEmotion = "";
-    private string formIsVisibleStr = "true";
-
+    private bool submitAttempted = false;
     private bool FormIsVisible => formIsVisibleStr == "true";
+
+    private Resource currentResource = new Resource();
+    private List<Resource> Resources = new List<Resource>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _resourcesService = new ResourcesService(Context);
+        Resources = await _resourcesService.GetAllResources();
+    }
 
     private bool ValidateForm()
     {
-        return !string.IsNullOrWhiteSpace(formTitle)
-            && !string.IsNullOrWhiteSpace(formContent)
-            && !string.IsNullOrWhiteSpace(formEmotion);
+        return !string.IsNullOrWhiteSpace(currentResource.Title)
+            && !string.IsNullOrWhiteSpace(currentResource.Content)
+            && !string.IsNullOrWhiteSpace(currentResource.Emotion);
     }
 
-    private List<Resource> resources = new()
-    {
-        new Resource
-        {
-            Id = 1,
-            Title = "Morning Motivation",
-            Content = "Start your day with intention. Take a deep breath and remember that every small step matters. Today is a new opportunity to grow and feel better about yourself.",
-            Emotion = "Позитивно",
-            IsVisible = true,
-            CreatedOn = DateTime.Now
-        },
-        new Resource
-        {
-            Id = 2,
-            Title = "Stress Management Guide",
-            Content = "Stress is a natural response of the body. Try grounding techniques like breathing exercises, short walks or journaling to regulate your emotions effectively.",
-            Emotion = "Неутрално",
-            IsVisible = false,
-            CreatedOn = DateTime.Now
-        },
-        new Resource
-        {
-            Id = 3,
-            Title = "Coping With Sadness",
-            Content = "Sad days are part of life. Allow yourself to feel your emotions without judgment. Small actions like talking to someone or listening to calming music can help.",
-            Emotion = "Негативно",
-            IsVisible = true,
-            CreatedOn = DateTime.Now
-        }
-    };
-
     private IEnumerable<Resource> FilteredResources =>
-        resources.Where(r =>
+        Resources.Where(r =>
             (string.IsNullOrWhiteSpace(searchStr) ||
                 r.Title.Contains(searchStr, StringComparison.OrdinalIgnoreCase) ||
                 r.Content.Contains(searchStr, StringComparison.OrdinalIgnoreCase)) &&
@@ -349,15 +327,16 @@
                 (selectedStatus == "Hidden" && !r.IsVisible))
         );
 
-    // ── Add ──
     private void AddResource()
     {
-        formTitle = "";
-        formContent = "";
-        formEmotion = "";
+        formTitle = string.Empty;
+        formContent = string.Empty;
+        formEmotion = string.Empty;
         formIsVisibleStr = "true";
         submitAttempted = false;
         isAddOpen = true;
+        currentResource = new Resource();
+        currentResource.IsVisible = true;
     }
 
     private void CloseAdd()
@@ -366,61 +345,49 @@
         submitAttempted = false;
     }
 
-    private void ConfirmAdd()
+    private async Task ConfirmAdd()
     {
         submitAttempted = true;
         if (!ValidateForm()) return;
-
-        var newId = resources.Count > 0 ? resources.Max(r => r.Id) + 1 : 1;
-        resources.Add(new Resource
-            {
-                Id = newId,
-                Title = formTitle.Trim(),
-                Content = formContent.Trim(),
-                Emotion = formEmotion,
-                IsVisible = FormIsVisible,
-                CreatedOn = DateTime.Now
-            });
+        currentResource.IsVisible = bool.Parse(formIsVisibleStr);
+        await _resourcesService.CreateResource(currentResource);
+        Resources = await _resourcesService.GetAllResources();
 
         isAddOpen = false;
         submitAttempted = false;
+
+        StateHasChanged();
     }
 
-    // ── Edit ──
-    private void EditResource(Resource resource)
+    private async Task EditResource(Resource resource)
     {
         currentResource = resource;
-        formTitle = resource.Title;
-        formContent = resource.Content;
-        formEmotion = resource.Emotion;
-        formIsVisibleStr = resource.IsVisible ? "true" : "false";
         submitAttempted = false;
         isEditOpen = true;
+        StateHasChanged();
     }
 
     private void CloseEdit()
     {
         isEditOpen = false;
         submitAttempted = false;
-        currentResource = null;
+        currentResource = new Resource();
     }
 
-    private void ConfirmEdit()
+    private async Task ConfirmEdit()
     {
         submitAttempted = true;
         if (!ValidateForm()) return;
-
-        currentResource.Title = formTitle.Trim();
-        currentResource.Content = formContent.Trim();
-        currentResource.Emotion = formEmotion;
-        currentResource.IsVisible = FormIsVisible;
+        currentResource.IsVisible = bool.Parse(formIsVisibleStr);
+        await _resourcesService.UpdateResource(currentResource);
 
         isEditOpen = false;
         submitAttempted = false;
-        currentResource = null;
+        currentResource = new Resource();
+
+        StateHasChanged();
     }
 
-    // ── Delete ──
     private void OpenDeleteModal(Resource resource)
     {
         currentResource = resource;
@@ -429,11 +396,14 @@
 
     private void CloseDelete() => isDeleteOpen = false;
 
-    private void ConfirmDelete()
+    private async Task ConfirmDelete()
     {
-        resources.Remove(currentResource);
+        await _resourcesService.DeleteResource(currentResource);
+        Resources = await _resourcesService.GetAllResources();
         isDeleteOpen = false;
-        currentResource = null;
+        currentResource = new Resource();
+
+        StateHasChanged();
     }
 
     // ── Toggle Visibility ──
@@ -445,11 +415,12 @@
 
     private void CloseToggle() => isToggleOpen = false;
 
-    private void ConfirmToggle()
+    private async Task ConfirmToggle()
     {
-        currentResource.IsVisible = !currentResource.IsVisible;
+        await _resourcesService.ChangeVisibility(currentResource);
         isToggleOpen = false;
-        currentResource = null;
+        currentResource = new Resource();
+        StateHasChanged();
     }
 
     private string GetPreview(string content)
@@ -591,6 +562,63 @@
     }
 
     /* ─── MODALS ─── */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(2px);
+    }
+
+    /* ── Resource form panel ── */
+    .resource-panel {
+        background: #FFFFFF;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 620px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        animation: slideUp 0.22s ease;
+        overflow: hidden;
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 30px 16px 30px;
+        border-bottom: 1px solid #F3F4F6;
+        flex-shrink: 0;
+    }
+
+        .panel-header h3 {
+            font-size: 20px;
+            color: #1F2937;
+            margin: 0;
+        }
+
+    /* Scrollable body */
+    .panel-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .panel-footer {
+        display: flex;
+        gap: 12px;
+        padding: 16px 30px 24px 30px;
+        border-top: 1px solid #F3F4F6;
+        flex-shrink: 0;
+    }
 
     .close-btn {
         background: none;
