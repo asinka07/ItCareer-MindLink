@@ -111,7 +111,7 @@
 
         if (ValidUser() && user.RoleId == 1)
         {
-            Session.LogIn(user);
+            await Session.LogIn(user);
             user.LastLogin = DateTime.Now;
             await _usersService.LogUser(user);
             await _logsService.CreateLog(user, "Успешен вход");
@@ -120,7 +120,7 @@
         }
         else if (ValidUser() && user.RoleId == 2)
         {
-            Session.LogIn(user);
+            await Session.LogIn(user);
             user.LastLogin = DateTime.Now;
             await _usersService.LogUser(user);
             await _logsService.CreateLog(user, "Успешен вход");

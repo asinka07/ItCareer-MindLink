@@ -299,9 +299,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (Session?.CurrentUser?.RoleId != 2 || Session?.CurrentUser == null)
+        if (Session?.CurrentUser == null || Session.CurrentUser.RoleId != 2)
         {
-            Nav.NavigateTo(Nav.HistoryEntryState, true);
+            Nav.NavigateTo("/");
+            return;
         }
         _usersService = new UsersService(DbContext);
         _logsService = new LogsService(DbContext);

@@ -14,7 +14,7 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddDbContext<MindLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<UserSessionService>();
+builder.Services.AddSingleton<UserSessionService>();
 
 builder.Services.AddScoped<StatisticsService>();
 
@@ -33,8 +33,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-app.UseAuthentication();
-app.UseAuthorization();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -48,6 +46,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

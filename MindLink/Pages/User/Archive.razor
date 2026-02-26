@@ -58,7 +58,7 @@ else
     {
         if (Session?.CurrentUser?.RoleId != 1 || Session?.CurrentUser == null)
         {
-            Nav.NavigateTo(Nav.HistoryEntryState, true);
+            Nav.NavigateTo(Nav.HistoryEntryState);
         }
         _recordsService = new RecordsService(DbContext);
         records = (await _recordsService.GetAllRecordsByUser(Session.CurrentUser!.UserCode))
