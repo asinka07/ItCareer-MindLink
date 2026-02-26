@@ -1,5 +1,8 @@
-﻿@page "/admin/dashboard"
+﻿@attribute [Authorize]
+@page "/admin/dashboard"
 @using MindLink.Data.Services
+@inject NavigationManager Nav
+@inject UserSessionService Session
 @inject DashboardService DashboardService
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="css/admin.css" rel="stylesheet" />
@@ -162,6 +165,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        
+    if (Session?.CurrentUser?.RoleId != 2 || Session?.CurrentUser == null)
+    {
+        Nav.NavigateTo(Nav.HistoryEntryState, true);
+    }
         totalUsers      = await DashboardService.GetTotalUsersAsync();
         totalRecords    = await DashboardService.GetRecordsThisMonthAsync();
         activeResources = await DashboardService.GetActiveResourcesAsync();

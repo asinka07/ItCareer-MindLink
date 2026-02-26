@@ -1,3 +1,4 @@
+@attribute [Authorize]
 @page "/stats"
 @inject NavigationManager Nav
 @inject StatisticsService StatsService
@@ -116,6 +117,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (Session?.CurrentUser?.RoleId != 1 || Session?.CurrentUser == null)
+        {
+            Nav.NavigateTo(Nav.HistoryEntryState, true);
+        }
         string userCode = Session.CurrentUser.UserCode;
 
         var firstRecord = await StatsService.GetFirstRecordDateAsync(userCode);

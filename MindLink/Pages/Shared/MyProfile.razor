@@ -1,3 +1,4 @@
+@attribute [Authorize]
 @page "/myprofile"
 @inject NavigationManager Nav
 @using Microsoft.AspNetCore.Identity
@@ -125,9 +126,9 @@
 
 	protected override void OnInitialized()
 	{
-		if (!Session.IsLoggedIn)
+		if (Session?.CurrentUser?.RoleId != 1 || Session?.CurrentUser == null)
 		{
-			Nav.NavigateTo("/login");
+			Nav.NavigateTo(Nav.HistoryEntryState, true);
 		}
 		_usersService = new UsersService(DbContext);
 		_logsService = new LogsService(DbContext);

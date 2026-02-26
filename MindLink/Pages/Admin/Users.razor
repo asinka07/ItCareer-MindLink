@@ -1,6 +1,10 @@
-﻿@page "/admin/users"
+﻿@attribute [Authorize]
+@page "/admin/users"
 @using MindLink.Data.Models
 @using MindLink.Data.Services
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject UserSessionService Session
 @inject MindLink.Data.MindLinkDbContext DbContext
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="css/admin.css" rel="stylesheet" />
@@ -295,6 +299,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (Session?.CurrentUser?.RoleId != 2 || Session?.CurrentUser == null)
+        {
+            Nav.NavigateTo(Nav.HistoryEntryState, true);
+        }
         _usersService = new UsersService(DbContext);
         _logsService = new LogsService(DbContext);
         allUsers = users = await _usersService.GetAllUsers();
@@ -479,3 +487,8 @@
         return code;
     }
 }
+<script>
+    window.goBack = () => {
+        history.back();
+    }
+</script>

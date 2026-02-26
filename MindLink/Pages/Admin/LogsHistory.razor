@@ -1,6 +1,9 @@
-﻿@page "/admin/user-logs"
+﻿@attribute [Authorize]
+@page "/admin/user-logs"
 @using MindLink.Data.Models
 @using MindLink.Data.Services
+@inject NavigationManager Nav
+@inject UserSessionService Session
 @inject MindLink.Data.MindLinkDbContext DbContext
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="css/admin.css" rel="stylesheet" />
@@ -65,6 +68,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (Session?.CurrentUser?.RoleId != 2 || Session?.CurrentUser == null)
+        {
+            Nav.NavigateTo(Nav.HistoryEntryState, true);
+        }
         _logsService = new LogsService(DbContext);
         allLogs = logs = await _logsService.GetAllLogs();
     }

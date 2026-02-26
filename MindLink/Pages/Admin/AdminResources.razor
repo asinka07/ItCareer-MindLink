@@ -1,6 +1,9 @@
-﻿@page "/admin/resources"
+﻿@attribute [Authorize]
+@page "/admin/resources"
 @inject MindLink.Data.MindLinkDbContext Context
 @using MindLink.Data.Models
+@inject NavigationManager Nav
+@inject UserSessionService Session
 @using MindLink.Data.Services
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="css/admin.css" rel="stylesheet" />
@@ -301,6 +304,10 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        if (Session?.CurrentUser?.RoleId != 2 || Session?.CurrentUser == null)
+        {
+            Nav.NavigateTo(Nav.HistoryEntryState, true);
+        }
         _resourcesService = new ResourcesService(Context);
         Resources = await _resourcesService.GetAllResources();
     }
