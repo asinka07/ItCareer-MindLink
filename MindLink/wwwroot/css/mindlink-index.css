@@ -147,13 +147,14 @@ header.topbar {
 }
 
 .side {
+    border-radius: 15px;
     padding: 28px;
-    background: linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.5));
+    background: rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
     gap: 18px;
     align-items: stretch;
-    align-self: start; /* не се разтяга изкуствено */
+    align-self: start; 
 }
 
 .card {
@@ -182,7 +183,7 @@ header.topbar {
 .icon {
     width: 44px;
     height: 44px;
-    min-width: 44px; /* предотвратява свиване на иконата */
+    min-width: 44px; 
     border-radius: 10px;
     background: #ddf5fd;
     display: grid;

@@ -92,11 +92,10 @@
     }
 </div>
 
-@* ─── ADD MODAL ─── *@
 @if (isAddOpen)
 {
-    <div class="modal-overlay">
-        <div class="resource-panel">
+    <div class="modal-overlay" style="justify-content: right!important;">
+        <div class="resource-panel" style="max-height: none!important; height: 100%!important; border-radius: 16px 0 0 16px!important;">
             <div class="panel-header">
                 <h3>Добавяне на ресурс</h3>
                 <button class="close-btn" @onclick="CloseAdd">
@@ -160,11 +159,10 @@
     </div>
 }
 
-@* ─── EDIT MODAL ─── *@
 @if (isEditOpen && currentResource != null)
 {
-    <div class="modal-overlay">
-        <div class="resource-panel">
+    <div class="modal-overlay" style="justify-content: right!important;">
+        <div class="resource-panel" style="max-height: none!important; height: 100%!important; border-radius: 16px 0 0 16px!important;">
             <div class="panel-header">
                 <h3>Редактиране на ресурс</h3>
                 <button class="close-btn" @onclick="CloseEdit">
@@ -228,7 +226,6 @@
     </div>
 }
 
-@* ─── DELETE MODAL ─── *@
 @if (isDeleteOpen && currentResource != null)
 {
     <div class="modal-overlay">
@@ -248,7 +245,6 @@
     </div>
 }
 
-@* ─── TOGGLE VISIBILITY MODAL ─── *@
 @if (isToggleOpen && currentResource != null)
 {
     <div class="modal-overlay">

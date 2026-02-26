@@ -14,6 +14,8 @@
 
 <PageTitle>MindLink - Статистики</PageTitle>
 
+<h1 class="page-title">Статистики</h1>
+
 @if (moodNavigator != null && activityNavigator != null)
 {
     <div style="display: flex; flex-direction: row; width: 80vw; height: fit-content; margin-bottom: 30px;">
@@ -145,7 +147,7 @@ else
         var valuesActivity = recordCounts.Select(s => s.CountOfRecords).ToArray();
         await JS.InvokeVoidAsync("renderBarChart", labelsActivity, valuesActivity);
 
-        var moodLabels = new string[] { "sad", "neutral", "happy" };
+        var moodLabels = new string[] { "негативно", "неутрално", "позитивно" };
         await JS.InvokeVoidAsync("renderDoughnutChart", moodLabels, moodCounts);
     }
 

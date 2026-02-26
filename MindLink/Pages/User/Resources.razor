@@ -1,123 +1,132 @@
 ﻿@page "/resources"
 @using MindLink.Data.Models
+@using MindLink.Data.Services
+@inject UserSessionService Session
+@inject NavigationManager Nav
+@inject MindLink.Data.MindLinkDbContext DbContext
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="css/site.css" rel="stylesheet" />
 
 <PageTitle>MindLink - Ресурси</PageTitle>
 
-<div class="res-page">
-
-    @* ── Page title ── *@
-    <h1 class="page-title">Ресурси</h1>
-    <p class="page-subtitle">Препоръчано за вас, въз основа на вашите настроения</p>
-
-    @* ── Mood banner ── *@
-    <div class="mood-banner mood-banner--@DominantKey">
-        <div class="mood-banner__left">
-            <span class="mood-banner__icon">@DominantEmoji</span>
-            <div>
-                <div class="mood-banner__title">@HeroTitle</div>
-                <div class="mood-banner__sub">@HeroSubtitle</div>
-            </div>
-        </div>
-        <div class="mood-banner__bar-wrap">
-            <div class="mood-bar">
-                <div class="mood-bar__seg mood-bar__neg" style="width:@NegPercent%" title="Негативно — @negativeCount"></div>
-                <div class="mood-bar__seg mood-bar__neu" style="width:@NeuPercent%" title="Неутрално — @neutralCount"></div>
-                <div class="mood-bar__seg mood-bar__pos" style="width:@PosPercent%" title="Позитивно — @positiveCount"></div>
-            </div>
-            <div class="mood-bar__labels">
-                <span><span class="dot dot--neg"></span>Негативно (@negativeCount)</span>
-                <span><span class="dot dot--neu"></span>Неутрално (@neutralCount)</span>
-                <span><span class="dot dot--pos"></span>Позитивно (@positiveCount)</span>
-            </div>
-        </div>
+@if (isLoading)
+{
+    <div style="display: flex; justify-content: center; align-items: center; height: 300px; color: #6B7280;">
+        <span>Зареждане...</span>
     </div>
+}
+else
+{
+    <div class="res-page">
 
-    @* ── Filter tabs ── *@
-    <div class="filter-card">
-        <div class="filter-tabs">
-            <button class="ftab @(activeFilter == "all" ? "ftab--active ftab--active-all" : "")"
-                    @onclick='() => SetFilter("all")'>
-                📋 Всички
-            </button>
-            <button class="ftab @(activeFilter == "Негативно" ? "ftab--active ftab--active-neg" : "")"
-                    @onclick='() => SetFilter("Негативно")'>
-                😔 Негативни
-            </button>
-            <button class="ftab @(activeFilter == "Неутрално" ? "ftab--active ftab--active-neu" : "")"
-                    @onclick='() => SetFilter("Неутрално")'>
-                😐 Неутрални
-            </button>
-            <button class="ftab @(activeFilter == "Позитивно" ? "ftab--active ftab--active-pos" : "")"
-                    @onclick='() => SetFilter("Позитивно")'>
-                😊 Позитивни
-            </button>
+        <h1 class="page-title">Ресурси</h1>
+        <p class="page-subtitle">Препоръчано за вас, въз основа на настроенията ви от последните 2 седмици</p>
+
+        @* ── Mood banner ── *@
+        <div class="mood-banner mood-banner--@DominantKey">
+            <div class="mood-banner__left">
+                <span class="mood-banner__icon">@DominantEmoji</span>
+                <div>
+                    <div class="mood-banner__title">@HeroTitle</div>
+                    <div class="mood-banner__sub">@HeroSubtitle</div>
+                </div>
+            </div>
+            <div class="mood-banner__bar-wrap">
+                <div class="mood-bar">
+                    <div class="mood-bar__seg mood-bar__neg" style="width:@NegPercent%" title="Негативно — @negativeCount"></div>
+                    <div class="mood-bar__seg mood-bar__neu" style="width:@NeuPercent%" title="Неутрално — @neutralCount"></div>
+                    <div class="mood-bar__seg mood-bar__pos" style="width:@PosPercent%" title="Позитивно — @positiveCount"></div>
+                </div>
+                <div class="mood-bar__labels">
+                    <span><span class="dot dot--neg"></span>Негативно (@negativeCount)</span>
+                    <span><span class="dot dot--neu"></span>Неутрално (@neutralCount)</span>
+                    <span><span class="dot dot--pos"></span>Позитивно (@positiveCount)</span>
+                </div>
+            </div>
         </div>
-        <div class="filter-right">
-            @if (activeFilter != "all")
-            {
-                <span class="filter-suggested-badge">✨ Препоръчано</span>
-            }
-            <span class="filter-count">@VisibleResources.Count() статии</span>
+
+        @* ── No records notice ── *@
+        @if (totalCount == 0)
+        {
+            <div class="no-records-notice">
+                <span>📝</span>
+                <p>Нямате записи от последните 2 седмици. Показваме всички налични ресурси.</p>
+            </div>
+        }
+
+        @* ── Filter tabs ── *@
+        <div class="filter-card">
+            <div class="filter-tabs">
+                <button class="ftab @(activeFilter == "all" ? "ftab--active ftab--active-all" : "")"
+                        @onclick='() => SetFilter("all")'>
+                    📋 Всички
+                </button>
+                <button class="ftab @(activeFilter == "Негативно" ? "ftab--active ftab--active-neg" : "")"
+                        @onclick='() => SetFilter("Негативно")'>
+                    😔 Негативни
+                </button>
+                <button class="ftab @(activeFilter == "Неутрално" ? "ftab--active ftab--active-neu" : "")"
+                        @onclick='() => SetFilter("Неутрално")'>
+                    😐 Неутрални
+                </button>
+                <button class="ftab @(activeFilter == "Позитивно" ? "ftab--active ftab--active-pos" : "")"
+                        @onclick='() => SetFilter("Позитивно")'>
+                    😊 Позитивни
+                </button>
+            </div>
+            <div class="filter-right">
+                @if (activeFilter != "all")
+                {
+                    <span class="filter-suggested-badge">✨ Препоръчано</span>
+                }
+                <span class="filter-count">@VisibleResources.Count() статии</span>
+            </div>
         </div>
+
+        @* ── Article grid ── *@
+        @if (!VisibleResources.Any())
+        {
+            <div class="empty-state">
+                <span class="empty-state__icon">📭</span>
+                <p>Няма налични ресурси в тази категория.</p>
+            </div>
+        }
+        else
+        {
+            <div class="res-grid">
+                @foreach (var r in VisibleResources)
+                {
+                    var eKey = EmotionKey(r.Emotion);
+                    var eEmoji = EmotionEmoji(r.Emotion);
+                    var readTime = EstimateReadTime(r.Content);
+
+                    <article class="res-card res-card--@eKey" @onclick="() => OpenArticle(r)">
+                        <div class="res-card__stripe"></div>
+                        <div class="res-card__body">
+                            <div class="res-card__top">
+                                <span class="badge badge--@eKey">@eEmoji @r.Emotion</span>
+                                <span class="res-card__date">@r.CreatedOn.ToShortDateString()</span>
+                            </div>
+                            <h3 class="res-card__title">@r.Title</h3>
+                            <p class="res-card__excerpt">@GetExcerpt(r.Content, 160)</p>
+                            <div class="res-card__footer">
+                                <span class="read-time">🕐 @readTime мин четене</span>
+                                <span class="read-more">Прочети →</span>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
     </div>
+}
 
-    @* ── Article grid ── *@
-    @if (!VisibleResources.Any())
-    {
-        <div class="empty-state">
-            <span class="empty-state__icon">📭</span>
-            <p>Няма налични ресурси в тази категория.</p>
-        </div>
-    }
-    else
-    {
-        <div class="res-grid">
-            @foreach (var r in VisibleResources)
-            {
-                var eKey = EmotionKey(r.Emotion);
-                var eEmoji = EmotionEmoji(r.Emotion);
-                var readTime = EstimateReadTime(r.Content);
-
-                <article class="res-card res-card--@eKey" @onclick="() => OpenArticle(r)">
-                    @* coloured top stripe *@
-                    <div class="res-card__stripe"></div>
-
-                    <div class="res-card__body">
-                        @* header row *@
-                        <div class="res-card__top">
-                            <span class="badge badge--@eKey">@eEmoji @r.Emotion</span>
-                            <span class="res-card__date">@r.CreatedOn.ToShortDateString()</span>
-                        </div>
-
-                        @* title *@
-                        <h3 class="res-card__title">@r.Title</h3>
-
-                        @* preview excerpt *@
-                        <p class="res-card__excerpt">@GetExcerpt(r.Content, 160)</p>
-
-                        @* footer *@
-                        <div class="res-card__footer">
-                            <span class="read-time">🕐 @readTime мин четене</span>
-                            <span class="read-more">Прочети →</span>
-                        </div>
-                    </div>
-                </article>
-            }
-        </div>
-    }
-</div>
-
-@* ══════════════════════════════════════════
-   ARTICLE READER — slide-in side panel
-══════════════════════════════════════════ *@
+@* ── Article reader panel ── *@
 @if (openedArticle != null)
 {
     <div class="reader-overlay" @onclick="CloseArticle"></div>
 
     <div class="reader-panel reader-panel--@EmotionKey(openedArticle.Emotion)">
-        @* panel header *@
         <div class="reader-header">
             <div class="reader-header__meta">
                 <span class="badge badge--@EmotionKey(openedArticle.Emotion)">
@@ -132,15 +141,12 @@
             </button>
         </div>
 
-        @* article stripe accent *@
         <div class="reader-stripe"></div>
 
-        @* scrollable article body *@
         <div class="reader-body">
             <h2 class="reader-title">@openedArticle.Title</h2>
             <div class="reader-read-time">🕐 @EstimateReadTime(openedArticle.Content) мин четене</div>
             <div class="reader-content">
-                @* Render paragraphs split by newlines *@
                 @foreach (var para in openedArticle.Content.Split('\n', StringSplitOptions.RemoveEmptyEntries))
                 {
                     <p>@para</p>
@@ -151,49 +157,66 @@
 }
 
 @code {
-    // ── Replace with real counts from user's mood log ──
-    private int positiveCount = 3;
-    private int neutralCount = 5;
-    private int negativeCount = 8;
+    private bool isLoading = true;
 
-    // ── Replace with DB fetch (IsVisible = true only) ──
-    private List<Resource> allResources = new()
-    {
-        new Resource { Id=1, Title="Сутрешна мотивация",       Content="Започнете деня с намерение. Поемете дълбоко въздух и си напомнете, че всяка малка стъпка е от значение.\n\nДнес е нова възможност да пораснете и да се чувствате по-добре. Независимо какво се е случило вчера, сутринта ви предлага чист лист.\n\nОпитайте се да зададете три цели за деня — малки, постижими неща. Усещането за изпълнени задачи изгражда самоувереност и положителна енергия.", Emotion="Позитивно", IsVisible=true, CreatedOn=DateTime.Now.AddDays(-2) },
-        new Resource { Id=2, Title="Силата на благодарността",  Content="Всяка вечер запишете три неща, за които сте благодарни. Практиката на благодарност пренасочва вниманието от трудностите към богатствата в живота ви.\n\nИзследванията показват, че редовното практикуване на благодарност намалява нивата на стрес, подобрява съня и укрепва отношенията с другите.\n\nНачалото е лесно — не е нужно да са грандиозни неща. Чаша топъл чай, усмивка от непознат, слънчев следобед — всичко има значение.", Emotion="Позитивно", IsVisible=true, CreatedOn=DateTime.Now.AddDays(-5) },
-        new Resource { Id=3, Title="Управление на стреса",      Content="Стресът е естествена реакция на тялото. Когато усетите напрежение, тялото ви изпраща сигнал, че нещо изисква внимание.\n\nОпитайте техники за заземяване — дихателни упражнения, кратки разходки или водене на дневник. Тези прости практики помагат да регулирате емоциите си и да възстановите спокойствието.\n\nВажно е да не се борите със стреса, а да го приемете и да потърсите конструктивен изход. Планирайте почивки в ежедневието си — те не са лукс, а необходимост.", Emotion="Неутрално", IsVisible=true, CreatedOn=DateTime.Now.AddDays(-3) },
-        new Resource { Id=4, Title="Балансът в ежедневието",    Content="Намирането на баланс между работа и почивка е ключово за менталното здраве.\n\nМодерният начин на живот често ни кара да поставяме продуктивността над всичко останало. Но истинската ефективност идва от отпочиналия ум.\n\nПланирайте почивки и се грижете за себе си без чувство на вина. Разходката в парка, книгата, разговорът с приятел — това не е загуба на време, това е инвестиция в себе си.", Emotion="Неутрално", IsVisible=true, CreatedOn=DateTime.Now.AddDays(-7) },
-        new Resource { Id=5, Title="Справяне с тъгата",         Content="Тъжните дни са част от живота. Не е нужно да се усмихвате, когато не ви се усмихва.\n\nПозволете си да чувствате емоциите без да ги съдите. Тъгата не е слабост — тя е сигнал, че нещо важно ви е докоснало.\n\nМалки действия могат да помогнат: разговор с близък човек, слушане на музика, която ви носи спомени, или просто излизане навън. Не е нужно да решите всичко веднага — понякога е достатъчно просто да продължите напред.", Emotion="Негативно", IsVisible=true, CreatedOn=DateTime.Now.AddDays(-1) },
-        new Resource { Id=6, Title="Когато всичко е трудно",    Content="В моменти на трудност е нормално да се чувствате претоварени. Мозъкът ни в такива моменти е склонен да мисли, че всичко е лошо и нищо няма да се промени.\n\nНо това не е истина. Трудностите са временни, дори когато не изглеждат така.\n\nНе трябва да се справяте сами. Потърсете подкрепа от хора или специалисти, на които имате доверие. Говоренето за трудностите намалява тяхната тежест и ни помага да видим изхода.", Emotion="Негативно", IsVisible=true, CreatedOn=DateTime.Now.AddDays(-4) },
-        new Resource { Id=7, Title="Дишане за спокойствие",     Content="Техниката 4-7-8 е едно от най-мощните инструменти за бързо успокояване на нервната система.\n\nКак да я практикувате: вдишайте бавно за 4 секунди, задръжте дъха за 7 секунди, след което издишайте напълно за 8 секунди. Повторете цикъла 4 пъти.\n\nТази техника активира парасимпатиковата нервна система — частта от мозъка, отговорна за почивка и възстановяване. Може да я практикувате навсякъде: в офиса, в транспорта, преди сън. С редовна практика ефектът се усилва значително.", Emotion="Негативно", IsVisible=true, CreatedOn=DateTime.Now.AddDays(-6) },
-    };
-
+    private List<Resource> allResources = new();
     private string activeFilter = "all";
     private Resource? openedArticle = null;
 
-    // ── On init: pre-select dominant emotion filter ──
-    protected override void OnInitialized()
+    // Mood counts от последните 2 седмици
+    private int positiveCount = 0;
+    private int neutralCount = 0;
+    private int negativeCount = 0;
+    private int totalCount => positiveCount + neutralCount + negativeCount;
+
+    private RecordsService _recordsService = null!;
+    private ResourcesService _resourcesService = null!;
+
+    protected override async Task OnInitializedAsync()
     {
-        // Default to the dominant emotion tab so user immediately sees relevant content
+        if (!Session.IsLoggedIn)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        _recordsService = new RecordsService(DbContext);
+        _resourcesService = new ResourcesService(DbContext);
+
+        allResources = await _resourcesService.GetAllVisibleResources();
+
+        var cutoff = DateTime.Now.Date.AddDays(-14);
+        var userCode = Session.CurrentUser!.UserCode;
+        var recentRecords = (await _recordsService.GetAllRecordsByUser(userCode))
+            .Where(r => r.RecordDate.Date >= cutoff)
+            .ToList();
+
+        positiveCount = recentRecords.Count(r => r.Sentiment == "positive");
+        neutralCount  = recentRecords.Count(r => r.Sentiment == "neutral");
+        negativeCount = recentRecords.Count(r => r.Sentiment == "negative");
+
         activeFilter = DominantEmotion == "Балансирано" ? "all" : DominantEmotion;
+
+        isLoading = false;
     }
 
-    // ── Article open/close ──
     private void OpenArticle(Resource r) => openedArticle = r;
     private void CloseArticle() => openedArticle = null;
 
-    // ── Dominant emotion ──
     private string DominantEmotion
     {
         get
         {
+            if (totalCount == 0) return "Балансирано";
+
             int max = Math.Max(positiveCount, Math.Max(neutralCount, negativeCount));
             int ties = (positiveCount == max ? 1 : 0)
-                     + (neutralCount == max ? 1 : 0)
+                     + (neutralCount  == max ? 1 : 0)
                      + (negativeCount == max ? 1 : 0);
-            if (ties > 1) return "Балансирано";
+
+            if (ties > 1)    return "Балансирано";
             if (positiveCount == max) return "Позитивно";
-            if (neutralCount == max) return "Неутрално";
+            if (neutralCount  == max) return "Неутрално";
             return "Негативно";
         }
     }
@@ -202,35 +225,32 @@
 
     private string DominantEmoji => DominantEmotion switch
     {
-        "Позитивно" => "😊",
-        "Неутрално" => "😐",
-        "Негативно" => "😔",
-        _ => "✨"
+        "Позитивно"   => "😊",
+        "Неутрално"   => "😐",
+        "Негативно"   => "😔",
+        _             => "✨"
     };
 
     private string HeroTitle => DominantEmotion switch
     {
-        "Позитивно" => "Продължавайте да разцъфтявате",
-        "Неутрално" => "Намерете своя център",
-        "Негативно" => "Не сте сами в това",
-        _ => "Вие сте в хармония"
+        "Позитивно"   => "Продължавайте да разцъфтявате",
+        "Неутрално"   => "Намерете своя център",
+        "Негативно"   => "Не сте сами в това",
+        _             => "Вие сте в хармония"
     };
 
     private string HeroSubtitle => DominantEmotion switch
     {
-        "Позитивно" => "Показваме ви ресурси, които ще поддържат вашата положителна енергия.",
-        "Неутрално" => "Подбрахме статии, за да ви помогнем да намерите баланс и спокойствие.",
-        "Негативно" => "Тук ще намерите подкрепа и инструменти за по-трудните моменти.",
-        _ => "Имате разнообразни настроения — ето ресурси за всяко от тях."
+        "Позитивно"   => "Показваме ви ресурси, които ще поддържат вашата положителна енергия.",
+        "Неутрално"   => "Подбрахме статии, за да ви помогнем да намерите баланс и спокойствие.",
+        "Негативно"   => "Тук ще намерите подкрепа и инструменти за по-трудните моменти.",
+        _             => "Имате разнообразни настроения — ето ресурси за всяко от тях."
     };
 
-    // ── Percentages ──
-    private int Total => positiveCount + neutralCount + negativeCount;
-    private double PosPercent => Total == 0 ? 0 : Math.Round((double)positiveCount / Total * 100, 1);
-    private double NeuPercent => Total == 0 ? 0 : Math.Round((double)neutralCount / Total * 100, 1);
-    private double NegPercent => Total == 0 ? 0 : Math.Round((double)negativeCount / Total * 100, 1);
+    private double PosPercent => totalCount == 0 ? 0 : Math.Round((double)positiveCount / totalCount * 100, 1);
+    private double NeuPercent => totalCount == 0 ? 0 : Math.Round((double)neutralCount  / totalCount * 100, 1);
+    private double NegPercent => totalCount == 0 ? 0 : Math.Round((double)negativeCount / totalCount * 100, 1);
 
-    // ── Filtered + sorted list ──
     private IEnumerable<Resource> VisibleResources
     {
         get
@@ -238,7 +258,7 @@
             var list = allResources.Where(r => r.IsVisible);
             if (activeFilter != "all")
                 list = list.Where(r => r.Emotion == activeFilter);
-            // dominant emotion articles always first
+
             return list.OrderBy(r => r.Emotion == DominantEmotion ? 0 : 1)
                        .ThenByDescending(r => r.CreatedOn);
         }
@@ -246,13 +266,12 @@
 
     private void SetFilter(string f) => activeFilter = f;
 
-    // ── Helpers ──
     private static string EmotionKey(string emotion) => emotion switch
     {
         "Позитивно" => "pos",
         "Неутрално" => "neu",
         "Негативно" => "neg",
-        _ => "bal"
+        _           => "bal"
     };
 
     private static string EmotionEmoji(string emotion) => emotion switch
@@ -260,41 +279,33 @@
         "Позитивно" => "😊",
         "Неутрално" => "😐",
         "Негативно" => "😔",
-        _ => "✨"
+        _           => "✨"
     };
 
     private static string GetExcerpt(string content, int maxChars)
     {
-        // strip newlines for the preview
         var flat = content.Replace('\n', ' ').Trim();
         return flat.Length <= maxChars ? flat : flat[..maxChars].TrimEnd() + "…";
     }
 
     private static int EstimateReadTime(string content)
     {
-        // average reading speed ~200 words/min
         int words = content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
         return Math.Max(1, (int)Math.Ceiling(words / 200.0));
     }
 }
 
 <style>
-    /* ════════════════════════════════
-               DOUGHNUT COLOUR TOKENS
-               sad   = #F59E0B  (amber)
-               neutral = #3B82F6 (blue)
-               happy = #10B981  (green)
-            ════════════════════════════════ */
     :root {
-        --c-neg: #F59E0B;
+        --c-neg: #ff9696;
         --c-neg-light: #FEF3C7;
         --c-neg-text: #92400E;
         --c-neg-border: #F59E0B;
-        --c-neu: #3B82F6;
+        --c-neu: #ffd296;
         --c-neu-light: #DBEAFE;
         --c-neu-text: #1E3A8A;
         --c-neu-border: #3B82F6;
-        --c-pos: #10B981;
+        --c-pos: #9df2a3;
         --c-pos-light: #D1FAE5;
         --c-pos-text: #065F46;
         --c-pos-border: #10B981;
@@ -304,9 +315,6 @@
         --c-bal-border: #8B5CF6;
     }
 
-    /* ════════════════════════════════
-               PAGE SHELL
-            ════════════════════════════════ */
     .res-page {
         padding: 20px;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -325,9 +333,19 @@
         font-size: 14px;
     }
 
-    /* ════════════════════════════════
-               MOOD BANNER
-            ════════════════════════════════ */
+    .no-records-notice {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: #6B7280;
+    }
+
     .mood-banner {
         display: flex;
         align-items: center;
@@ -342,25 +360,10 @@
         border-left-style: solid;
     }
 
-    .mood-banner--pos {
-        background: var(--c-pos-light);
-        border-left-color: var(--c-pos);
-    }
-
-    .mood-banner--neu {
-        background: var(--c-neu-light);
-        border-left-color: var(--c-neu);
-    }
-
-    .mood-banner--neg {
-        background: var(--c-neg-light);
-        border-left-color: var(--c-neg);
-    }
-
-    .mood-banner--bal {
-        background: var(--c-bal-light);
-        border-left-color: var(--c-bal);
-    }
+    .mood-banner--pos {background: var(--c-pos-light); border-left-color: var(--c-pos); }
+    .mood-banner--neu { background: var(--c-neu-light); border-left-color: var(--c-neu); }
+    .mood-banner--neg { background: var(--c-neg-light); border-left-color: var(--c-neg); }
+    .mood-banner--bal { background: var(--c-bal-light); border-left-color: var(--c-bal); }
 
     .mood-banner__left {
         display: flex;
@@ -369,10 +372,7 @@
         flex-shrink: 0;
     }
 
-    .mood-banner__icon {
-        font-size: 38px;
-        line-height: 1;
-    }
+    .mood-banner__icon { font-size: 38px; line-height: 1; }
 
     .mood-banner__title {
         font-size: 16px;
@@ -387,11 +387,7 @@
         max-width: 340px;
     }
 
-    /* breakdown bar */
-    .mood-banner__bar-wrap {
-        flex: 1;
-        min-width: 200px;
-    }
+    .mood-banner__bar-wrap { flex: 1; min-width: 200px; }
 
     .mood-bar {
         display: flex;
@@ -409,55 +405,25 @@
         transition: width 0.6s ease;
     }
 
-    .mood-bar__pos {
-        background: var(--c-pos);
-    }
+    .mood-bar__pos { background: var(--c-pos); }
+    .mood-bar__neu { background: var(--c-neu); }
+    .mood-bar__neg { background: var(--c-neg); }
 
-    .mood-bar__neu {
-        background: var(--c-neu);
-    }
+    .mood-bar__labels { display: flex; gap: 16px; flex-wrap: wrap; }
 
-    .mood-bar__neg {
-        background: var(--c-neg);
-    }
-
-    .mood-bar__labels {
+    .mood-bar__labels span {
         display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #6B7280;
     }
 
-        .mood-bar__labels span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-            color: #6B7280;
-        }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .dot--pos { background: var(--c-pos); }
+    .dot--neu { background: var(--c-neu); }
+    .dot--neg { background: var(--c-neg); }
 
-    .dot {
-        width: 9px;
-        height: 9px;
-        border-radius: 50%;
-        display: inline-block;
-        flex-shrink: 0;
-    }
-
-    .dot--pos {
-        background: var(--c-pos);
-    }
-
-    .dot--neu {
-        background: var(--c-neu);
-    }
-
-    .dot--neg {
-        background: var(--c-neg);
-    }
-
-    /* ════════════════════════════════
-               FILTER ROW
-            ════════════════════════════════ */
     .filter-card {
         background: #FFFFFF;
         padding: 14px 18px;
@@ -471,11 +437,7 @@
         gap: 12px;
     }
 
-    .filter-tabs {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
+    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 
     .ftab {
         padding: 7px 16px;
@@ -491,45 +453,12 @@
         box-shadow: 1px 1px 3px 1px rgba(0,0,0,0.06);
     }
 
-        .ftab:hover {
-            border-color: #D1D5DB;
-            color: #374151;
-        }
+    .ftab--active-all { background: #1F2937; border-color: #1F2937; color: #fff; box-shadow: 1px 1px 4px rgba(0,0,0,0.25); }
+    .ftab--active-neg { background: var(--c-neg); border-color: var(--c-neg); color: #fff; box-shadow: 1px 1px 4px rgba(245,158,11,0.4); }
+    .ftab--active-neu { background: var(--c-neu); border-color: var(--c-neu); color: #fff; box-shadow: 1px 1px 4px rgba(59,130,246,0.4); }
+    .ftab--active-pos { background: var(--c-pos); border-color: var(--c-pos); color: #fff; box-shadow: 1px 1px 4px rgba(16,185,129,0.4); }
 
-    /* active variants using doughnut colours */
-    .ftab--active-all {
-        background: #1F2937;
-        border-color: #1F2937;
-        color: #fff;
-        box-shadow: 1px 1px 4px rgba(0,0,0,0.25);
-    }
-
-    .ftab--active-neg {
-        background: var(--c-neg);
-        border-color: var(--c-neg);
-        color: #fff;
-        box-shadow: 1px 1px 4px rgba(245,158,11,0.4);
-    }
-
-    .ftab--active-neu {
-        background: var(--c-neu);
-        border-color: var(--c-neu);
-        color: #fff;
-        box-shadow: 1px 1px 4px rgba(59,130,246,0.4);
-    }
-
-    .ftab--active-pos {
-        background: var(--c-pos);
-        border-color: var(--c-pos);
-        color: #fff;
-        box-shadow: 1px 1px 4px rgba(16,185,129,0.4);
-    }
-
-    .filter-right {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+    .filter-right { display: flex; align-items: center; gap: 10px; }
 
     .filter-suggested-badge {
         background: #FEF9C3;
@@ -541,22 +470,14 @@
         border: 1px solid #FDE68A;
     }
 
-    .filter-count {
-        font-size: 13px;
-        color: #9CA3AF;
-        white-space: nowrap;
-    }
+    .filter-count { font-size: 13px; color: #9CA3AF; white-space: nowrap; }
 
-    /* ════════════════════════════════
-               ARTICLE GRID
-            ════════════════════════════════ */
     .res-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 20px;
     }
 
-    /* ── Article card ── */
     .res-card {
         background: #FFFFFF;
         border-radius: 16px;
@@ -568,98 +489,32 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-        .res-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.13);
-        }
+    .res-card:hover .read-more { color: #1F2937; }
 
-            .res-card:hover .read-more {
-                color: #1F2937;
-            }
+    .res-card__stripe { height: 5px; width: 100%; flex-shrink: 0; }
+    .res-card--pos .res-card__stripe { background: linear-gradient(90deg, var(--c-pos), #34D399); }
+    .res-card--neu .res-card__stripe { background: linear-gradient(90deg, var(--c-neu), #60A5FA); }
+    .res-card--neg .res-card__stripe { background: linear-gradient(90deg, var(--c-neg), #FBBF24); }
 
-    /* top stripe */
-    .res-card__stripe {
-        height: 5px;
-        width: 100%;
-        flex-shrink: 0;
-    }
+    .res-card__body { padding: 18px 20px 20px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
 
-    .res-card--pos .res-card__stripe {
-        background: linear-gradient(90deg, var(--c-pos), #34D399);
-    }
+    .res-card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 
-    .res-card--neu .res-card__stripe {
-        background: linear-gradient(90deg, var(--c-neu), #60A5FA);
-    }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge--pos { background: var(--c-pos-light); color: var(--c-pos-text); }
+    .badge--neu { background: var(--c-neu-light); color: var(--c-neu-text); }
+    .badge--neg { background: var(--c-neg-light); color: var(--c-neg-text); }
+    .badge--bal { background: var(--c-bal-light); color: var(--c-bal-text); }
 
-    .res-card--neg .res-card__stripe {
-        background: linear-gradient(90deg, var(--c-neg), #FBBF24);
-    }
+    .res-card__date { font-size: 12px; color: #9CA3AF; white-space: nowrap; }
 
-    .res-card__body {
-        padding: 18px 20px 20px 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        flex: 1;
-    }
+    .res-card__title { font-size: 16px; font-weight: 700; color: #1F2937; margin: 0; line-height: 1.35; }
 
-    .res-card__top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
-    /* badges */
-    .badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .badge--pos {
-        background: var(--c-pos-light);
-        color: var(--c-pos-text);
-    }
-
-    .badge--neu {
-        background: var(--c-neu-light);
-        color: var(--c-neu-text);
-    }
-
-    .badge--neg {
-        background: var(--c-neg-light);
-        color: var(--c-neg-text);
-    }
-
-    .badge--bal {
-        background: var(--c-bal-light);
-        color: var(--c-bal-text);
-    }
-
-    .res-card__date {
-        font-size: 12px;
-        color: #9CA3AF;
-        white-space: nowrap;
-    }
-
-    .res-card__title {
-        font-size: 16px;
-        font-weight: 700;
-        color: #1F2937;
-        margin: 0;
-        line-height: 1.35;
-    }
-
-    /* excerpt — short teaser */
     .res-card__excerpt {
         font-size: 13px;
         color: #6B7280;
         line-height: 1.65;
         margin: 0;
-        /* clamp to ~3 lines */
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
@@ -675,21 +530,9 @@
         margin-top: auto;
     }
 
-    .read-time {
-        font-size: 12px;
-        color: #9CA3AF;
-    }
+    .read-time { font-size: 12px; color: #9CA3AF; }
+    .read-more { font-size: 13px; font-weight: 600; color: #6B7280; transition: color 0.15s; }
 
-    .read-more {
-        font-size: 13px;
-        font-weight: 600;
-        color: #6B7280;
-        transition: color 0.15s;
-    }
-
-    /* ════════════════════════════════
-               READER PANEL + OVERLAY
-            ════════════════════════════════ */
     .reader-overlay {
         position: fixed;
         inset: 0;
@@ -714,24 +557,11 @@
         border-left: 4px solid transparent;
     }
 
-    /* colour the panel's left border per emotion */
-    .reader-panel--pos {
-        border-left-color: var(--c-pos);
-    }
+    .reader-panel--pos { border-left-color: var(--c-pos); }
+    .reader-panel--neu { border-left-color: var(--c-neu); }
+    .reader-panel--neg { border-left-color: var(--c-neg); }
+    .reader-panel--bal { border-left-color: var(--c-bal); }
 
-    .reader-panel--neu {
-        border-left-color: var(--c-neu);
-    }
-
-    .reader-panel--neg {
-        border-left-color: var(--c-neg);
-    }
-
-    .reader-panel--bal {
-        border-left-color: var(--c-bal);
-    }
-
-    /* reader header */
     .reader-header {
         display: flex;
         align-items: center;
@@ -741,16 +571,8 @@
         flex-shrink: 0;
     }
 
-    .reader-header__meta {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .reader-date {
-        font-size: 12px;
-        color: #9CA3AF;
-    }
+    .reader-header__meta { display: flex; align-items: center; gap: 10px; }
+    .reader-date { font-size: 12px; color: #9CA3AF; }
 
     .reader-close {
         background: #F3F4F6;
@@ -764,64 +586,21 @@
         transition: background 0.15s, color 0.15s;
     }
 
-        .reader-close:hover {
-            background: #E5E7EB;
-            color: #1F2937;
-        }
+    .reader-close:hover { background: #E5E7EB; color: #1F2937; }
 
-    /* thin stripe below header */
-    .reader-stripe {
-        height: 4px;
-        flex-shrink: 0;
-    }
+    .reader-stripe { height: 4px; flex-shrink: 0; }
+    .reader-panel--pos .reader-stripe { background: linear-gradient(90deg, var(--c-pos), #34D399); }
+    .reader-panel--neu .reader-stripe { background: linear-gradient(90deg, var(--c-neu), #60A5FA); }
+    .reader-panel--neg .reader-stripe { background: linear-gradient(90deg, var(--c-neg), #FBBF24); }
 
-    .reader-panel--pos .reader-stripe {
-        background: linear-gradient(90deg, var(--c-pos), #34D399);
-    }
+    .reader-body { flex: 1; overflow-y: auto; padding: 24px 28px 40px 28px; }
 
-    .reader-panel--neu .reader-stripe {
-        background: linear-gradient(90deg, var(--c-neu), #60A5FA);
-    }
+    .reader-title { font-size: 22px; font-weight: 700; color: #1F2937; margin: 0 0 8px 0; line-height: 1.3; }
+    .reader-read-time { font-size: 12px; color: #9CA3AF; margin-bottom: 24px; }
 
-    .reader-panel--neg .reader-stripe {
-        background: linear-gradient(90deg, var(--c-neg), #FBBF24);
-    }
+    .reader-content p { font-size: 15px; color: #374151; line-height: 1.8; margin: 0 0 16px 0; }
+    .reader-content p:last-child { margin-bottom: 0; }
 
-    /* scrollable body */
-    .reader-body {
-        flex: 1;
-        overflow-y: auto;
-        padding: 24px 28px 40px 28px;
-    }
-
-    .reader-title {
-        font-size: 22px;
-        font-weight: 700;
-        color: #1F2937;
-        margin: 0 0 8px 0;
-        line-height: 1.3;
-    }
-
-    .reader-read-time {
-        font-size: 12px;
-        color: #9CA3AF;
-        margin-bottom: 24px;
-    }
-
-    .reader-content p {
-        font-size: 15px;
-        color: #374151;
-        line-height: 1.8;
-        margin: 0 0 16px 0;
-    }
-
-        .reader-content p:last-child {
-            margin-bottom: 0;
-        }
-
-    /* ════════════════════════════════
-               EMPTY STATE
-            ════════════════════════════════ */
     .empty-state {
         background: #FFFFFF;
         border-radius: 16px;
@@ -831,57 +610,29 @@
         color: #9CA3AF;
     }
 
-    .empty-state__icon {
-        font-size: 42px;
-        display: block;
-        margin-bottom: 12px;
-    }
+    .empty-state__icon { font-size: 42px; display: block; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; margin: 0; }
 
-    .empty-state p {
-        font-size: 15px;
-        margin: 0;
-    }
-
-    /* ════════════════════════════════
-               ANIMATIONS
-            ════════════════════════════════ */
     @@keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+        from { transform: translateX(100%); opacity: 0; }
+        to   { transform: translateX(0);    opacity: 1; }
     }
 
     @@keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
+        from { opacity: 0; }
+        to   { opacity: 1; }
     }
 
-    /* ════════════════════════════════
-               RESPONSIVE
-            ════════════════════════════════ */
     @@media (max-width: 640px) {
-        .mood-banner {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .res-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .reader-body {
-            padding: 20px 18px 32px 18px;
-        }
+        .mood-banner { flex-direction: column; align-items: flex-start; }
+        .res-grid { grid-template-columns: 1fr; }
+        .reader-body { padding: 20px 18px 32px 18px; }
     }
+
+    .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #1F2937;
+}
 </style>

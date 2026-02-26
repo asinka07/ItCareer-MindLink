@@ -19,6 +19,12 @@ namespace MindLink.Data.Services
                                          .ToListAsync();
         }
 
+        public async Task<List<Resource>> GetAllVisibleResources()
+        {
+            return await _context.Resources.Where(r => r.IsVisible == true).OrderByDescending(r => r.CreatedOn)
+                                         .ToListAsync();
+        }
+
         public async Task CreateResource(Resource resource)
         {
             resource.CreatedOn = DateTime.Now;

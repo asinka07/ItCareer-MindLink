@@ -7,10 +7,13 @@
 @using MindLink.Data.Services
 @namespace MindLink.Components
 @inject IJSRuntime JS
-
+<link href="css/Homepage.css" rel="stylesheet" />
 <link href="/css/book.css" rel="stylesheet" />
 
-<h3>Архив на дневниците</h3>
+<PageTitle>MindLink - Архив</PageTitle>
+
+<h1 class="page-title">
+Архив на дневниците</h1>
 
 @if (monthlyRecords.Any())
 {

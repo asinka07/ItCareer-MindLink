@@ -45,7 +45,6 @@
             </p>
         </div>
 
-        @* ── DEMO SECTION ── *@
         <div class="card" style="margin-top: 20px;">
             <h3>🧠 Изпробвай AI анализа</h3>
             <p class="muted" style="margin-bottom: 12px;">
@@ -72,6 +71,9 @@
         </section>
 
         <aside class="side">
+            <p class="muted">
+                MindLink не замества специализирана помощ. Ако се чувствате застрашени обърнете се към специалист.
+            </p>
             <div class="card">
                 <h3>Как работи</h3>
                 <div class="steps">
@@ -79,7 +81,7 @@
                         <div class="icon">1</div>
                         <div>
                             <strong>Създай акаунт</strong>
-                            <div class="muted">Регистрирай се безплатно за секунди. Нужни са само основни данни и парола.</div>
+                            <div class="muted">Регистрирай се безплатно за секунди.</div>
                         </div>
                     </div>
 
@@ -111,7 +113,7 @@
                         <div class="icon">5</div>
                         <div>
                             <strong>Получавай персонализирани ресурси</strong>
-                            <div class="muted">Приложението предлага статии и съвети, съобразени с твоето емоционално състояние.</div>
+                            <div class="muted">Приложението предлага полезни ресурси, съобразени с твоето емоционално състояние.</div>
                         </div>
                     </div>
                 </div>
@@ -120,7 +122,7 @@
             <div class="card">
                 <h3>Защо MindLink?</h3>
                 <p class="muted">
-                    MindLink не е просто дневник — той разбира как се чувстваш. С помощта на изкуствен интелект анализира всеки твой запис и ти помага да разпознаеш емоционалните си модели. Разработен с цел сигурност, простота и истинска подкрепа за психичното здраве.
+                    MindLink не е просто дневник — той разбира как се чувстваш. С помощта на изкуствен интелект анализира всеки твой запис и ти помага да следиш промяната в настроението ти. Разработен с цел сигурност, простота и истинска подкрепа за психичното здраве.
                 </p>
             </div>
         </aside>
@@ -131,7 +133,6 @@
 
     </div>
 
-    @* ── DEMO RESULT MODAL ── *@
     @if (showDemoModal)
     {
         <div class="modal-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000;">
@@ -165,7 +166,6 @@
     void GoToLogin() => NavManager.NavigateTo("/login");
     void GoToRegister() => NavManager.NavigateTo("/signup");
 
-    // ── Demo state ──
     private string demoText = string.Empty;
     private bool isAnalyzing = false;
     private bool showDemoModal = false;
