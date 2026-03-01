@@ -82,7 +82,7 @@
 
     bool IsButtonDisabled => user == null || string.IsNullOrWhiteSpace(Password);
 
-    protected override async void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         Session.LogOut();
         _usersService = new UsersService(DbContext);
@@ -97,7 +97,7 @@
 
     private bool submitAttempted = false;
 
-    private async void Log()
+    private async Task Log()
     {
         submitAttempted = true;
 
@@ -128,9 +128,13 @@
         }
         else
         {
-            user = allUsers.Where(s => s.UserCode == "111111").Single();
-            await _logsService.CreateLog(user, "Неуспешен вход");
-            return;
+            var systemUser = allUsers.FirstOrDefault(s => s.UserCode == "111111");
+            if (systemUser != null)
+            {
+                await _logsService.CreateLog(systemUser, "Неуспешен вход");
+            }
+
+            StateHasChanged();
         }
     }
 
