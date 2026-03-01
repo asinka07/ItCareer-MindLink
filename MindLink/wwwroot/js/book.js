@@ -7,7 +7,7 @@
     }
 
     if (book.dataset.initialized === "true") {
-        return;
+        destroyBookById(bookId);
     }
 
     book.dataset.initialized = "true";

@@ -14,256 +14,333 @@
 <PageTitle>MindLink - Архив</PageTitle>
 
 <h1 class="page-title">
-Архив на дневниците</h1>
+	Архив на дневниците
+</h1>
 
 @if (monthlyRecords.Any())
 {
-    <div class="book-thumbnails-wrapper">
-    <div class="book-thumbnails">
-        @foreach (var month in monthlyRecords.OrderByDescending(m => m.Key))
-        {
-            @foreach (var bookPages in month.Value)
-            {
-                <div class="book-thumbnail" style="margin-right: 15px; " @onclick="() => OpenBook(bookPages, month.Key)">
-                    <div class="paper hard" style="box-shadow: none!important;">
-                        <div class="front" style="box-shadow: none!important; border: 1px solid darkgreen;"><div class="front-content">@month.Key.ToString("MMMM yyyy")</div></div>
-                        <div class="back" style="box-shadow: none!important;"></div>
-                    </div>
-                </div>
-            }
-        }
-    </div>
-</div>
+	<div class="shelf-container">
+		<button class="shelf-arrow left" @onclick="ScrollLeft">&#8249;</button>
+
+		<div class="book-thumbnails-wrapper" id="bookShelf">
+			<div class="book-thumbnails">
+				@foreach (var month in monthlyRecords.OrderByDescending(m => m.Key))
+				{
+					@foreach (var bookPages in month.Value)
+					{
+						<div class="book-thumbnail" @onclick="() => OpenBook(bookPages, month.Key)">
+							<div class="paper hard" style="box-shadow: none!important;">
+								<div class="front" style="box-shadow: none!important; border: 2px solid darkgreen;">
+									<div class="front-content" style="font-size: 17px!important;">@month.Key.ToString("MMMM yyyy")</div>
+								</div>
+								<div class="back" style="box-shadow: none!important;"></div>
+							</div>
+						</div>
+					}
+				}
+			</div>
+		</div>
+
+		<button class="shelf-arrow right" @onclick="ScrollRight">&#8250;</button>
+	</div>
 }
 else
 {
-    <p>Няма записи</p>
+	<p>Няма записи</p>
 }
 
 @if (selectedBook != null)
 {
-    <Book @ref="bookComponent" Title="@selectedBookTitle" Pages="@selectedBook.Pages" />
+	<Book @key="selectedBookKey" @ref="bookComponent" Title="@selectedBookTitle" Pages="@selectedBook.Pages" />
 }
 
 @code {
-    private Book? bookComponent;
-    private RecordsService _recordsService = null!;
-    private List<Record> records = new List<Record>();
+	private Book? bookComponent;
+	private string selectedBookKey = "";
+	private RecordsService _recordsService = null!;
+	private List<Record> records = new List<Record>();
 
-    private Dictionary<DateTime, List<BookViewModel>> monthlyRecords = new();
-    private BookViewModel? selectedBook;
-    private string selectedBookTitle = "";
+	private Dictionary<DateTime, List<BookViewModel>> monthlyRecords = new();
+	private BookViewModel? selectedBook;
+	private string selectedBookTitle = "";
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (Session?.CurrentUser?.RoleId != 1 || Session?.CurrentUser == null)
-        {
-            Nav.NavigateTo(Nav.HistoryEntryState);
-        }
-        _recordsService = new RecordsService(DbContext);
-        records = (await _recordsService.GetAllRecordsByUser(Session.CurrentUser!.UserCode))
-                    .OrderBy(r => r.RecordDate).ToList();
+	protected override async Task OnInitializedAsync()
+	{
+		if (Session?.CurrentUser?.RoleId != 1 || Session?.CurrentUser == null)
+		{
+			Nav.NavigateTo(Nav.HistoryEntryState);
+		}
+		_recordsService = new RecordsService(DbContext);
+		records = (await _recordsService.GetAllRecordsByUser(Session.CurrentUser!.UserCode))
+					.OrderBy(r => r.RecordDate).ToList();
 
-        monthlyRecords = records
-            .GroupBy(r => new DateTime(r.RecordDate.Year, r.RecordDate.Month, 1))
-            .ToDictionary(
-                g => g.Key,
-                g => new List<BookViewModel> { new BookViewModel { Pages = BuildBookPages(g.ToList()) } }
-            );
-    }
+		monthlyRecords = records
+			.GroupBy(r => new DateTime(r.RecordDate.Year, r.RecordDate.Month, 1))
+			.ToDictionary(
+				g => g.Key,
+				g => new List<BookViewModel> { new BookViewModel { Pages = BuildBookPages(g.ToList()) } }
+			);
+	}
 
-private void OpenBook(BookViewModel book, DateTime month)
-{
-    selectedBook = book;
-    selectedBookTitle = $"Дневник за {month:MMMM yyyy}";
+	private void OpenBook(BookViewModel book, DateTime month)
+	{
+		selectedBook = book;
+		selectedBookTitle = $"Дневник за {month:MMMM yyyy}";
+		selectedBookKey = $"{month:yyyy-MM}-{DateTime.Now.Ticks}";
 
-    StateHasChanged(); 
-    _ = InvokeAsync(() => bookComponent?.NotifyBookOpened());
-}
+		StateHasChanged();
+		_ = InvokeAsync(() => bookComponent?.NotifyBookOpened());
+	}
 
+	private async Task ScrollLeft()
+	{
+		await JS.InvokeVoidAsync("scrollShelf", "bookShelf", -200);
+	}
 
-    private List<BookPage> BuildBookPages(List<Record> records)
-    {
-        var pages = new List<BookPage>();
-        for (int i = 0; i < records.Count; i += 2)
-        {
-            pages.Add(new BookPage
-            {
-                LeftRecord = records[i],
-                RightRecord = (i + 1 < records.Count) ? records[i + 1] : null
-            });
-        }
-        return pages;
-    }
+	private async Task ScrollRight()
+	{
+		await JS.InvokeVoidAsync("scrollShelf", "bookShelf", 200);
+	}
 
-    public class BookViewModel
-    {
-        public List<BookPage> Pages { get; set; } = new();
-    }
+	private List<BookPage> BuildBookPages(List<Record> records)
+	{
+		var pages = new List<BookPage>();
+		for (int i = 0; i < records.Count; i += 2)
+		{
+			pages.Add(new BookPage
+			{
+				LeftRecord = records[i],
+				RightRecord = (i + 1 < records.Count) ? records[i + 1] : null
+			});
+		}
+		return pages;
+	}
+
+	public class BookViewModel
+	{
+		public List<BookPage> Pages { get; set; } = new();
+	}
 }
 
 <style>
-    * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
 
-.book {
-    color: darkgreen;
-    position: relative;
-    width: 350px;
-    height: 500px;
-}
+	main {
+		overflow-x: hidden !important;
+		max-width: 100vw !important;
+	}
 
-.paper {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    perspective: 3500px;
-}
+	.book {
+		color: darkgreen;
+		position: relative;
+		width: 350px;
+		height: 500px;
+	}
 
-.front,
-.back {
-    color: darkgreen;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    transform-origin: left center;
-    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.7s ease;
-    font-family: 'Georgia', serif;
-    font-size: 1.2rem;
-    line-height: 1.4;
-    transform-style: preserve-3d;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    border-radius: 2px;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.03);
-}
+	.paper {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		perspective: 3500px;
+	}
 
-.front {
-    z-index: 1;
-    background-image: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,245,235,0.95)), url('images/paper-texture.png');
-    background-blend-mode: multiply;
-    border-radius: 2px;
-    margin-left: 2px;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.03);
-    backface-visibility: hidden;
-}
+	.front,
+	.back {
+		color: darkgreen;
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		transform-origin: left center;
+		transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.7s ease;
+		font-family: 'Georgia', serif;
+		font-size: 1.2rem;
+		line-height: 1.4;
+		transform-style: preserve-3d;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		border-radius: 2px;
+		box-shadow: 0 5px 0 rgba(0,0,0,0.03);
+	}
 
-.back {
-    z-index: 0;
-    background-image: url('images/paper-texture.png');
-    background-blend-mode: multiply;
-    border-radius: 2px;
-    margin-right: 2px;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.03);
-}
+	.front {
+		z-index: 1;
+		background-image: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,245,235,0.95)), url('images/paper-texture.png');
+		background-blend-mode: multiply;
+		border-radius: 2px;
+		margin-left: 2px;
+		box-shadow: 0 5px 0 rgba(0,0,0,0.03);
+		backface-visibility: hidden;
+	}
 
-.front-content,
-.back-content {
-    color: darkgreen;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
+	.back {
+		z-index: 0;
+		background-image: url('images/paper-texture.png');
+		background-blend-mode: multiply;
+		border-radius: 2px;
+		margin-right: 2px;
+		box-shadow: 0 5px 0 rgba(0,0,0,0.03);
+	}
 
-.back-content {
-    transform: rotateY(180deg);
-}
+	.front-content,
+	.back-content {
+		color: darkgreen;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+	}
 
-.flipped .front {
-    transform: rotateY(-180deg);
-    box-shadow: inset -15px 0 30px rgba(0,0,0,0.15);
-}
+	.back-content {
+		transform: rotateY(180deg);
+	}
 
-.flipped .back {
-    transform: rotateY(-180deg);
-    box-shadow: inset 15px 0 30px rgba(0,0,0,0.15);
-}
+	.flipped .front {
+		transform: rotateY(-180deg);
+		box-shadow: inset -15px 0 30px rgba(0,0,0,0.15);
+	}
 
-.paper.hard .front,
-.paper.hard .back {
-    background-image: linear-gradient(180deg, rgba(189,255,254,0.9), rgba(157,242,163,0.9)), url('images/cover-texture.png');
-    background-blend-mode: multiply;
-    color: #fff;
-    font-weight: bold;
-    border-radius: 12px;
-    box-shadow: inset 0 0 0 4px rgba(0,60,0,0.4), 0 15px 30px rgba(0,0,0,0.4);
-    transform-origin: left center;
-    width: calc(100% + 5px);
-    height: calc(100% + 10px);
-    top: -5px;
-    left: 10px;
-}
+	.flipped .back {
+		transform: rotateY(-180deg);
+		box-shadow: inset 15px 0 30px rgba(0,0,0,0.15);
+	}
 
-.paper:not(.hard) {
-    transition: transform 0.6s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s;
-    width: calc(100% - 20px);
-    height: calc(100% - 20px);
-    top: 10px;
-    left: 10px;
-}
+	.paper.hard .front,
+	.paper.hard .back {
+		background-image: linear-gradient(180deg, rgba(189,255,254,0.9), rgba(157,242,163,0.9)), url('images/cover-texture.png');
+		background-blend-mode: multiply;
+		color: #fff;
+		font-weight: bold;
+		border-radius: 12px;
+		box-shadow: inset 0 0 0 4px rgba(0,60,0,0.4), 0 15px 30px rgba(0,0,0,0.4);
+		transform-origin: left center;
+		width: calc(100% + 5px);
+		height: calc(100% + 10px);
+		top: -5px;
+		left: 10px;
+	}
 
-    .paper:not(.hard) .front,
-    .paper:not(.hard) .back {
-        box-shadow: inset -4px 0 6px rgba(0,0,0,0.08);
-        border-left: 2px solid rgba(74,110,110,0.4);
-    }
+	.paper:not(.hard) {
+		transition: transform 0.6s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s;
+		width: calc(100% - 20px);
+		height: calc(100% - 20px);
+		top: 10px;
+		left: 10px;
+	}
 
-.paper.hard {
-    z-index: 1000;
-}
+		.paper:not(.hard) .front,
+		.paper:not(.hard) .back {
+			box-shadow: inset -4px 0 6px rgba(0,0,0,0.08);
+			border-left: 2px solid rgba(74,110,110,0.4);
+		}
 
-.paper.flipped {
-    z-index: auto;
-}
+	.paper.hard {
+		z-index: 1000;
+	}
 
-.book {
-    perspective: 2000px;
-}
+	.paper.flipped {
+		z-index: auto;
+	}
 
+	.book {
+		perspective: 2000px;
+	}
 
-.book-thumbnail {
-    flex: 0 0 auto;
-    width: 80px;
-    height: 120px;
-    cursor: pointer;
-    perspective: 1000px;
-    scroll-snap-align: start;
-}
+	/* Shelf */
+	.shelf-container {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 20px;
+	}
 
-.book-thumbnails-wrapper {
-    overflow-x: auto;
-    padding: 15px;
-    margin-bottom: 20px;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-}
+	.book-thumbnails-wrapper {
+		overflow-x: auto;
+		overflow-y: visible;
+		padding: 20px 20px 0px 20px;
+		scroll-snap-type: x mandatory;
+		scroll-behavior: smooth;
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+		background: linear-gradient(180deg, rgba(245, 240, 230, 0.6) 0%, rgba(235, 225, 205, 0.8) 85%, rgba(160, 110, 60, 0.9) 85%, rgba(120, 80, 40, 1) 100% );
+		border-radius: 8px 8px 8px 8px;
+		box-shadow: 0 8px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.4);
+	}
 
-.book-thumbnails {
-    display: flex;
-    gap: 15px;
-}
+		.book-thumbnails-wrapper::-webkit-scrollbar {
+			display: none;
+		}
 
-.book-thumbnail {
-    flex: 0 0 auto;
-    width: 80px;
-    height: 120px;
-    cursor: pointer;
-    perspective: 1000px;
-    scroll-snap-align: start;
-}
+	.book-thumbnails {
+		display: flex;
+		gap: 15px;
+		flex-wrap: nowrap;
+		width: max-content;
+	}
 
+	.book-thumbnail {
+		flex: 0 0 auto;
+		width: 92px;
+		height: 135px;
+		cursor: pointer;
+		perspective: 1000px;
+		scroll-snap-align: start;
+		transition: transform 0.2s ease, filter 0.2s ease;
+	}
+
+		.book-thumbnail:hover {
+			transform: translateY(-6px);
+			filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+		}
+
+	.shelf-arrow {
+		flex: 0 0 auto;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		border: none;
+		background: rgb(71 140 40 / 85%);
+		color: white;
+		font-size: 28px;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+		transition: background 0.2s, transform 0.15s;
+		line-height: 1;
+		padding-bottom: 2px;
+	}
+
+		.shelf-arrow:hover {
+			transform: scale(1.1);
+		}
+
+		.shelf-arrow:active {
+			transform: scale(0.95);
+		}
 </style>
+
+<script>
+				window.scrollShelf = (id, amount) => {
+		const el = document.getElementById(id);
+		if (el) el.scrollBy({ left: amount, behavior: 'smooth' });
+	};
+</script>
