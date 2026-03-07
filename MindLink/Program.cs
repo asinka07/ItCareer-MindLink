@@ -14,7 +14,7 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddDbContext<MindLinkDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddSingleton<UserSessionService>();
+builder.Services.AddScoped<UserSessionService>();
 
 builder.Services.AddScoped<StatisticsService>();
 

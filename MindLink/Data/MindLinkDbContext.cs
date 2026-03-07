@@ -65,11 +65,6 @@ public class MindLinkDbContext : DbContext
                   .HasForeignKey(u => u.RoleId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne(u => u.Role)
-                  .WithMany(r => r.Users)
-                  .HasForeignKey(u => u.RoleId)
-                  .OnDelete(DeleteBehavior.Restrict);
-
         });
 
         modelBuilder.Entity<Record>(entity =>
@@ -98,7 +93,7 @@ public class MindLinkDbContext : DbContext
             entity.HasKey(r => r.Id);
 
             entity.Property(r => r.Title)
-                  .HasColumnType("nvachar(150)")
+                  .HasColumnType("nvarchar(150)")
                   .IsRequired();
 
             entity.Property(r => r.Content)
