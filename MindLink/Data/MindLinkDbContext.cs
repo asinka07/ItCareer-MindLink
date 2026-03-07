@@ -81,7 +81,7 @@ public class MindLinkDbContext : DbContext
                   .IsRequired();
 
             entity.Property(r => r.RecordText)
-                  .HasColumnType("text")
+                  .HasColumnType("nvarchar(max)")
                   .IsRequired();
 
             entity.HasOne(r => r.User)
@@ -102,7 +102,7 @@ public class MindLinkDbContext : DbContext
                   .IsRequired();
 
             entity.Property(r => r.Content)
-                  .HasColumnType("text")
+                  .HasColumnType("nvarchar(max)")
                   .IsRequired();
 
             entity.Property(r => r.Emotion)
