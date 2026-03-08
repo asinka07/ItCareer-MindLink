@@ -12,6 +12,7 @@
 @using System.Globalization
 <link href="css/site.css" rel="stylesheet" />
 <link href="css/statistics.css" rel="stylesheet" />
+<link href="css/responsive.css" rel="stylesheet" />
 
 <PageTitle>MindLink - Статистики</PageTitle>
 
@@ -19,8 +20,8 @@
 
 @if (moodNavigator != null && activityNavigator != null)
 {
-    <div style="display: flex; flex-direction: row; width: 80vw; height: fit-content; margin-bottom: 30px;">
-        <div style="display: flex; flex-direction: column; width: 50%; height: 100%;">
+    <div class="stats-layout">
+        <div class="stats-left">
 
             <!-- Line chart -->
             <div class="period-switcher" style="align-self: center;">
@@ -43,9 +44,9 @@
                 <button @onclick="NextPeriod" disabled="@moodNavigator.IsNextDisabled">&#11208;</button>
                 <button class="todayButton" @onclick="GoToToday">&#11150; Днес</button>
             </div>
-            <canvas id="lineChart" style="flex: 1; width: 100%;"></canvas>
+            <canvas id="lineChart" class="stats-canvas"></canvas>
 
-            <hr style="border: 1px dashed gray; background: none;">
+            <hr class="stats-divider-horizontal">
 
             <!-- Bar chart -->
             <div class="period-switcher-bar-chart" style="align-self: center;">
@@ -68,14 +69,13 @@
                 <button @onclick="NextActivityPeriod" disabled="@activityNavigator.IsNextDisabled">&#11208;</button>
                 <button class="todayButton-bar-chart" @onclick="GoToTodayActivity">&#11150; Днес</button>
             </div>
-            <canvas id="barChart" style="flex: 1; width: 100%;"></canvas>
+            <canvas id="barChart" class="stats-canvas"></canvas>
         </div>
 
+        <hr class="stats-divider-vertical">
 
         <!-- Doughnut chart -->
-      <hr style="background: none; border: 1px dashed gray; height: 100dvh; margin-left: 30px; margin-right: -15px;">
-
-        <div style="flex: 1; display: flex; justify-content: center; align-items: center; height: 100%; flex-direction: column;">
+        <div class="stats-right">
             <div class="period-switcher-doughnut-chart" style="align-self: center;">
                 <button class="period-button-doughnut-chart @(countNavigator.Period == StatisticPeriod.Week ? "selected" : "")"
                         @onclick="() => ChangeMoodCountsPeriod(StatisticPeriod.Week)">
@@ -96,7 +96,7 @@
                 <button @onclick="NextMoodCountsPeriod" disabled="@countNavigator.IsNextDisabled">&#11208;</button>
                 <button class="todayButton-doughnut-chart" @onclick="GoToTodayMoodCounts">&#11150; Днес</button>
             </div>
-            <canvas id="doughnutChart" style="width: 80%; height: 80%;"></canvas>
+            <canvas id="doughnutChart" class="stats-canvas-doughnut"></canvas>
         </div>
     </div>
 }

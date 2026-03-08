@@ -3,7 +3,7 @@
 @inject IJSRuntime JS
 
 <link href="/css/book.css" rel="stylesheet" />
-<div style="display: flex; flex-direction: column; align-items: center;">
+<div style="display: flex; flex-direction: column; align-items: center; ">
 <div id="@BookId" class="book">
     <div class="paper hard">
         <div class="front">
@@ -77,6 +77,13 @@
 
 
     <style>
+    @@media (max-width: 640px) {
+        .book {
+            width: min(350px, calc(100vw - 80px));
+            height: min(500px, calc((100vw - 80px) * 1.43));
+        }
+    }
+
         .prev-btn,
 .next-btn {
     position: relative;

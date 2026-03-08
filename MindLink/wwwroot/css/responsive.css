@@ -5,6 +5,7 @@
     align-self: center;
 }
 
+/* ---- Navigation ---- */
 @media (max-width: 640px) {
     .top-row {
         display: flex !important;
@@ -20,6 +21,122 @@
         .profile-trigger svg {
             width: 28px;
         }
+}
+
+/* ---- Index page ---- */
+@media (max-width: 640px) {
+    body {
+        padding: 0px !important;
+    }
+
+    .container {
+        border-radius: 12px;
+    }
+
+    .container {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    header.topbar {
+        order: 1;
+    }
+
+    .hero {
+        order: 2;
+        padding: 16px !important;
+    }
+
+    .side {
+        order: 3;
+        padding: 16px !important;
+    }
+
+    footer {
+        order: 4;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+    }
+
+        .cta-buttons .btn {
+            width: 100%;
+            text-align: center;
+        }
+
+    header.topbar > .brand > div {
+        flex-direction: row !important;
+        gap: 12px !important;
+        align-items: center !important;
+    }
+
+        header.topbar > .brand > div img {
+            height: 60px !important;
+        }
+
+        header.topbar > .brand > div > div h1 {
+            font-size: 22px !important;
+        }
+
+        header.topbar > .brand > div > div p {
+            font-size: 12px !important;
+        }
+}
+
+/* ---- Login page ---- */
+@media (max-width: 640px) {
+    .registration-page {
+        padding: 16px;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .registration-form {
+        width: 100%;
+        padding: 28px 20px;
+    }
+
+        .registration-form .btn.primary {
+            width: 100% !important;
+        }
+}
+
+/* ---- Register page ---- */
+@media (max-width: 640px) {
+    .row-short {
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+
+        .row-short .field {
+            width: 100% !important;
+        }
+
+    .row-passwords {
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+
+        .row-passwords .field {
+            width: 100% !important;
+        }
+}
+
+
+/* ---- Successful registration page ---- */
+@media (max-width: 640px) {
+    .auth-container .success-card {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .success-card {
+        width: 90%;
+        padding: 32px 24px;
+    }
 }
 
 /* ---- Line Chart Start ---- */
@@ -146,8 +263,8 @@
     border: 1px solid rgb(255 210 150 / 60%);
     box-shadow: 0 2px 6px rgb(71 98 98 / 60%);
 }
-/* ---- Doughnut Chart End ---- */
 
+/* ---- Doughnut Chart End ---- */
 .page-title {
     font-size: 28px!important;
     font-weight: 700!important;
@@ -157,7 +274,6 @@
 }
 
 /* ---- User Homepage ---- */
-
 .homepage-row {
     display: flex;
     flex-direction: row;

@@ -4,11 +4,16 @@
     box-sizing: border-box;
 }
 
+@@media (max-width: 640px) {
+    .book {
+        width: min(350px, calc(100vw - 80px));
+        height: min(500px, calc((100vw - 80px) * 1.43));
+    }
+}
+
 .book {
     color: darkgreen;
     position: relative;
-    width: 350px;
-    height: 500px;
 }
 
 .paper {

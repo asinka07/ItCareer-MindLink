@@ -10,6 +10,7 @@
 @inject IJSRuntime JS
 <link href="css/Homepage.css" rel="stylesheet" />
 <link href="/css/book.css" rel="stylesheet" />
+<link href="/css/responsive.css" rel="stylesheet" />
 
 <PageTitle>MindLink - Архив</PageTitle>
 
@@ -123,6 +124,13 @@ else
 }
 
 <style>
+	@@media (max-width: 640px) {
+		.book {
+			width: min(350px, calc(100vw - 80px));
+			height: min(500px, calc((100vw - 80px) * 1.43));
+		}
+	}
+
 	* {
 		margin: 0;
 		padding: 0;
@@ -137,8 +145,8 @@ else
 	.book {
 		color: darkgreen;
 		position: relative;
-		width: 350px;
-		height: 500px;
+		width: min(350px, calc(95vw - 32px));
+		height: min(500px, 60vw);
 	}
 
 	.paper {
