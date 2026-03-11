@@ -59,6 +59,18 @@ public class UsersService
         await _context.SaveChangesAsync();
     }
 
+    public async Task<User?> GetUserByUsername(string username)
+    {
+        return await _context.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Username == username);
+    }
+
+    public async Task<User?> GetUserByCode(string code)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.UserCode == code);
+    }
+
     public async Task UpdatePassword(User userInfo)
     {
         var user = await _context.Users.FindAsync(userInfo.UserCode);

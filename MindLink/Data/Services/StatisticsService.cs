@@ -41,7 +41,7 @@ namespace MindLink.Data.Services
             int neutralCount = records.Count(r => r.Sentiment == "neutral");
             int sadCount = records.Count(r => r.Sentiment == "negative");
 
-            return new int[] { sadCount, neutralCount, happyCount };
+            return new int[] { happyCount, neutralCount, sadCount };
         }
 
 

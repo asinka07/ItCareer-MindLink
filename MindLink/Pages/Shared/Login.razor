@@ -36,17 +36,15 @@
                 </div>
             </div>
 
-
-
-            @if (submitAttempted && !ValidUser())
+            @if (submitAttempted && !isLoading && !ValidUser())
             {
                 <div class="text-danger" style="text-align: center">
                     Невалидно потребителско име или парола.
                 </div>
             }
 
-            <button class="btn primary" @onclick="Log">
-                Вход
+            <button class="btn primary" @onclick="Log" disabled="@isLoading">
+                @(isLoading ? "Зареждане..." : "Вход")
             </button>
 
             <p class="muted small">
@@ -58,10 +56,9 @@
 </div>
 
 @code {
-    UsersService _usersService = null!;
-    LogsService _logsService = null!;
-    List<User> allUsers = new List<User>();
-    User user = new User();
+    User? user = null;
+    private bool isLoading = false;
+    private bool submitAttempted = false;
 
     private string username = string.Empty;
     private string Username
@@ -70,7 +67,7 @@
         set
         {
             username = value;
-            FindUser();
+            user = null;
         }
     }
 
@@ -80,59 +77,49 @@
     private string PasswordInputType => IsPasswordVisible ? "text" : "password";
     private void TogglePasswordVisibility() => IsPasswordVisible = !IsPasswordVisible;
 
-    bool IsButtonDisabled => user == null || string.IsNullOrWhiteSpace(Password);
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         Session.LogOut();
-        _usersService = new UsersService(DbContext);
-        _logsService = new LogsService(DbContext);
-        allUsers = await _usersService.GetAllUsers();
     }
-
-    private void FindUser()
-    {
-        user = allUsers.FirstOrDefault(x => x.Username == username);
-    }
-
-    private bool submitAttempted = false;
 
     private async Task Log()
     {
         submitAttempted = true;
+        isLoading = true;
 
         if (string.IsNullOrWhiteSpace(Username))
         {
+            isLoading = false;
             return;
         }
 
-        FindUser();
+        var usersService = new UsersService(DbContext);
+        var logsService = new LogsService(DbContext);
 
+        user = await usersService.GetUserByUsername(Username);
+        isLoading = false;
 
-        if (ValidUser() && user.RoleId == 1)
+        if (ValidUser() && user!.RoleId == 1)
         {
             await Session.LogIn(user);
             user.LastLogin = DateTime.Now;
-            await _usersService.LogUser(user);
-            await _logsService.CreateLog(user, "Успешен вход");
+            await usersService.LogUser(user);
+            await logsService.CreateLog(user, "Успешен вход");
             Nav.NavigateTo("/homepage");
-
         }
-        else if (ValidUser() && user.RoleId == 2)
+        else if (ValidUser() && user!.RoleId == 2)
         {
             await Session.LogIn(user);
             user.LastLogin = DateTime.Now;
-            await _usersService.LogUser(user);
-            await _logsService.CreateLog(user, "Успешен вход");
+            await usersService.LogUser(user);
+            await logsService.CreateLog(user, "Успешен вход");
             Nav.NavigateTo("/admin/dashboard");
         }
         else
         {
-            var systemUser = allUsers.FirstOrDefault(s => s.UserCode == "111111");
+            var systemUser = await usersService.GetUserByCode("111111");
             if (systemUser != null)
-            {
-                await _logsService.CreateLog(systemUser, "Неуспешен вход");
-            }
+                await logsService.CreateLog(systemUser, "Неуспешен вход");
 
             StateHasChanged();
         }
@@ -144,9 +131,7 @@
             return false;
 
         var hasher = new PasswordHasher<User>();
-
         var result = hasher.VerifyHashedPassword(user, user.Password, Password);
-
         return result == PasswordVerificationResult.Success;
     }
 }
