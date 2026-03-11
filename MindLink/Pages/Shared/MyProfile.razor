@@ -126,7 +126,7 @@
 
 	protected override void OnInitialized()
 	{
-		if (Session?.CurrentUser?.RoleId != 1 || Session?.CurrentUser == null)
+		if (Session?.CurrentUser == null)
 		{
 			Nav.NavigateTo(Nav.HistoryEntryState, true);
 		}
